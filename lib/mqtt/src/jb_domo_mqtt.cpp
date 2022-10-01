@@ -12,17 +12,33 @@
 
 /** Constructors **/
 
-DomoMQTTClient::DomoMQTTClient(String host, uint16_t port = (uint16_t)1883U) {
+/**
+ * @brief Construct a new DomoMQTTClient object
+ * 
+ * @param host Hostname of the host running the MQTT broker
+ * @param port Port of the MQTT broker (default 1883)
+ */
+DomoMQTTClient::DomoMQTTClient(String host, uint16_t port) {
   DomoMQTTClient(host, "", port);
 }
 
-DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, uint16_t port = (uint16_t)1883U) {
+/**
+ * @brief Construct a new DomoMQTTClient object
+ * 
+ * @param host Hostname of the host running the MQTT broker
+ * @param rootTopic 
+ * @param port Port of the MQTT broker (default 1883)
+ */
+DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, uint16_t port) {
   DomoMQTTClient(host, rootTopic, "cmd", "status", "lwt", "ON", "OFF", "Online", "Offline", port);
 }
 
-DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, String cmdTopic = "cmd", String statusTopic = "status", 
-        String lwtTopic = "lwt", String onCmd = "ON", String offCmd = "OFF", String onlineLwt = "Online",
-        String offlineLwt = "Offline", uint16_t port = 1883) {
+// DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, String cmdTopic = "cmd", String statusTopic = "status", 
+//         String lwtTopic = "lwt", String onCmd = "ON", String offCmd = "OFF", String onlineLwt = "Online",
+//         String offlineLwt = "Offline", uint16_t port = 1883) {
+DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, String cmdTopic, String statusTopic, 
+        String lwtTopic, String onCmd, String offCmd, String onlineLwt,
+        String offlineLwt, uint16_t port) {
   _host = host;
   _port = port;
 
@@ -31,22 +47,17 @@ DomoMQTTClient::DomoMQTTClient(String host, String rootTopic, String cmdTopic = 
   _mqttUser = "mqtt";
   _mqttPwd = "mqtt_user";
 
-  try
-  {
+  if (rootTopic.length() > 0) {
     setRootTopic(rootTopic);
+    setCmdTopic(_rootTopic + "\\" + cmdTopic);
+    setstatusTopic(_rootTopic + "\\" + statusTopic);
+    setLwtTopic(_rootTopic + "\\" + lwtTopic);
+    setOnCmd(onCmd);
+    setOffCmd(offCmd);
+    setOnlineLwt(onlineLwt);
+    setOfflineLwt(offlineLwt);
   }
-  catch(const std::exception& e)
-  {
-    return;
-  }
-    
-  setCmdTopic(_rootTopic + "\\" + cmdTopic);
-  setstatusTopic(_rootTopic + "\\" + statusTopic);
-  setLwtTopic(_rootTopic + "\\" + lwtTopic);
-  setOnCmd(onCmd);
-  setOffCmd(offCmd);
-  setOnlineLwt(onlineLwt);
-  setOfflineLwt(offlineLwt);
+  
 }
 
 success_t DomoMQTTClient::start() {
@@ -77,6 +88,12 @@ success_t DomoMQTTClient::start() {
   return start(&wifiClient);
 }
 
+/**
+ * @brief Start the MQTT client using an initialized Wifi client
+ * 
+ * @param wifiClient 
+ * @return success_t 
+ */
 success_t DomoMQTTClient::start(WFClient* wifiClient) {
   MQTTPubSubClient mqttClient;
   unsigned long connectStart = millis();
@@ -98,7 +115,7 @@ success_t DomoMQTTClient::start(WFClient* wifiClient) {
     #ifdef JBDOMODEBUG
     Serial.println("Failed!");
     #endif
-    return -1;
+    return false;
   }
 
   #ifdef JBDOMODEBUG
@@ -113,26 +130,57 @@ success_t DomoMQTTClient::start(WFClient* wifiClient) {
   _mqttClient = &mqttClient;
 
   
-  return 1;
+  return true;
 }
 
+/**
+ * @brief Update the MQTT client
+ * 
+ * Should be called as frequently as possible in the main loop/=.
+ * @return true if All went well, false if an error occurs
+ */
 bool DomoMQTTClient::update() {
+  if (!_mqttClient) return false;
+  if (!_mqttClient->isConnected()) return false;
   return _mqttClient->update();
 }
 
 /** Publishing **/
 
+/**
+ * @brief Publish a new status to the status topic
+ * 
+ * @param status The status to be published
+ * @return success_t 
+ */
 success_t DomoMQTTClient::publishStatus(String status) {
   return publish(_statusTopic, status, true);
 }
 
+/**
+ * @brief Publish a new command to the command topic
+ * 
+ * @param status The command to be published
+ * @return success_t 
+ */
 success_t DomoMQTTClient::publishCmd(String cmd) {
   return publish(_cmdTopic, cmd, false, (uint8_t)1U );
 }
 
-success_t DomoMQTTClient::publish(String topic, String payload, bool retain = false, uint8_t qos = (uint8_t)0U) {
-
+//success_t DomoMQTTClient::publish(String topic, String payload, bool retain = false, uint8_t qos = (uint8_t)0U) {
+/**
+ * @brief Publish a new message to the specified topic
+ * 
+ * @param String topic The topic to publish to
+ * @param String payload The payload (message) to be published
+ * @param bool retain default = false
+ * @param uint8_t qos  default 0
+ * @return success_t 
+ */
+success_t DomoMQTTClient::publish(String topic, String payload, bool retain, uint8_t qos) {
+  return _mqttClient->publish(topic, payload, retain, qos);
 }
+
 
 /** Simple setters **/
 
@@ -146,6 +194,11 @@ void DomoMQTTClient::setLwtTopic(String lwtTopic) { _lwtTopic = lwtTopic; }
 
 void DomoMQTTClient::setOnCmd(String onCmd) { _onCmd = onCmd; }
 
+/**
+ * @brief Set the off command
+ * 
+ * @param offCmd 
+ */
 void DomoMQTTClient::setOffCmd(String offCmd) { _offCmd = offCmd; }
 
 void DomoMQTTClient::setOnlineLwt(String onlineLwt) { _onlineLwt = onlineLwt; }

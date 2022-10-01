@@ -2,6 +2,9 @@
 #include <jbkaku.h>
 #include <WiFiManager.h>
 #include <mqtt_client.h>
+#include <jb_domo_mqtt.h>
+
+DomoMQTTClient mqtt("192.168.0.10");
 
 ESP8266WebServer server(80);
 
@@ -13,7 +16,7 @@ void handleNotFound() {
 
 void handleCommand() {
     String cmd = server.uri();
-
+    mqtt.setOffCmd("asd");
     #ifdef DEBUGLOG
     Serial.print("Command received: ");
     Serial.println(cmd);
@@ -87,6 +90,7 @@ void setup() {
 
 void loop() {
     server.handleClient();
+    mqtt.update();
     mqtt_loop();
 }
 

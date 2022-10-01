@@ -20,7 +20,17 @@
   typedef WiFiClient WFClient;
 #endif
 
-typedef int8_t success_t;
+/*
+// Example of how to define callback methods
+#ifdef __AVR__
+    typedef void (*WebSocketServerEvent)(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
+    typedef bool (*WebSocketServerHttpHeaderValFunc)(String headerName, String headerValue);
+#else
+    typedef std::function<void(uint8_t num, WStype_t type, uint8_t * payload, size_t length)> WebSocketServerEvent;
+    typedef std::function<bool(String headerName, String headerValue)> WebSocketServerHttpHeaderValFunc;
+#endif
+*/
+typedef bool success_t;
 
 class DomoMQTTClient {
   public: 
@@ -29,6 +39,11 @@ class DomoMQTTClient {
     DomoMQTTClient(String host, String rootTopic, String cmdTopic = "cmd", String statusTopic = "status", 
         String lwtTopic = "lwt", String onCmd = "ON", String offCmd = "OFF", String onlineLwt = "Online",
         String offlineLwt = "Offline", uint16_t port = 1883);
+    // DomoMQTTClient(String host, uint16_t port);
+    // DomoMQTTClient(String host, String rootTopic, uint16_t port);
+    // DomoMQTTClient(String host, String rootTopic, String cmdTopic, String statusTopic, 
+    //     String lwtTopic, String onCmd, String offCmd, String onlineLwt,
+    //     String offlineLwt, uint16_t port);
 
     void
       setRootTopic(String rootTopic),
@@ -41,12 +56,13 @@ class DomoMQTTClient {
       setOfflineLwt(String offlineLwt);
     
     bool update();
-    
+
     success_t
       start(),
       start(WFClient* wifiClient),
       publishStatus(String status),
       publishCmd(String cmd),
+      //publish(String topic, String payload, bool retain, uint8_t qos);
       publish(String topic, String payload, bool retain = false, uint8_t qos = (uint8_t)0U);
 
   private:

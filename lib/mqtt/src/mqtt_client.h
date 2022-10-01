@@ -48,6 +48,7 @@ void mqtt_setup() {
   Serial.println(" connected!");
   mqttClient.setWill("homelight/livingroom/main/lwt","offline", true, 0);
   mqttClient.subscribe("homelight/livingroom/main/cmd", handleCmd);
+  mqttClient.publish("homelight/livingroom/main/ip", wifiClient.localIP().toString(), true, 0);
 }
 
 void mqtt_loop() {
