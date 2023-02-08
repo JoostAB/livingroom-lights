@@ -1,0 +1,104 @@
+#include <Arduino.h>
+#include <jbdebug.h>
+
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
+
+#include <MQTTPubSubClient.h>
+
+typedef std::function<void(const String& cmd)> MsgReceivedCB;
+
+MsgReceivedCB _cmdCallback;
+
+WiFiClient wifiClient;
+MQTTPubSubClient mqttClient;
+
+const String mainTopic = "homelight/livingroom/main/";
+const String cmdTopic = mainTopic + "cmd";
+const String statusTopic = mainTopic + "status";
+
+bool firstCmd = true;
+
+struct mqtt_client_info
+{
+  const char* mqttHost;
+  uint16_t mqttPort;
+  const char* mainTopic;
+  const char* cmdTopic;
+  
+};
+
+void handleCmd(const String& payload, const size_t size) {
+  firstCmd = false;
+  PRINTS("Message arrived [");
+  PRINTDS(payload);
+  PRINTLNS("]");
+
+  _cmdCallback(payload);
+}
+
+void handleStatus(const String& payload, const size_t size) {
+  PRINTS("Status message arrived [");
+  PRINTDS(payload);
+  PRINTLNS("]");
+  if (firstCmd) {
+    _cmdCallback(payload);
+  }
+
+  // if (firstCmd) {
+  //   mqttClient.publish(cmdTopic,payload,false);
+  //   firstCmd = false;
+  // }
+  // _cmdCallback(payload);
+  firstCmd = false;
+}
+
+void mqtt_setup(MsgReceivedCB callback) {
+  _cmdCallback = callback;
+
+  Serial.print("connecting to host...");
+  while (!wifiClient.connect("192.168.0.10", 1883)) {
+    Serial.print(".");
+    delay(200);
+  }
+  Serial.println(" connected!");
+
+
+  mqttClient.begin(wifiClient);
+  Serial.print("connecting to mqtt broker...");
+  //mqttClient.setWill(mainTopic + "lwt","offline", true);
+
+  if (!mqttClient.connect("homelight2", "mqtt", "mqtt_user")) {
+    PRINTLN("Error loggin into mqtt broker: ", mqttClient.getLastError());
+  } else {
+    PRINTLNS(" connected!");
+  }
+  // while (!mqttClient.connect("homelight", "mqtt", "mqtt_user")) {
+  //   PRINTS(".");
+  //   delay(200);
+  // }
+  
+  
+  mqttClient.publish(mainTopic + "ip", wifiClient.localIP().toString(), true);
+  mqttClient.publish(mainTopic + "lwt", "online", true);
+
+  // PRINTLN("Subscribing to ", statusTopic);
+  // mqttClient.subscribe(statusTopic, handleStatus);
+  PRINTLN("Subscribing to ", cmdTopic);
+  mqttClient.subscribe(cmdTopic, handleCmd);
+}
+
+void mqtt_loop() {
+  mqttClient.update();
+}
+
+void mqtt_pub(const String& topic, const String& payload, bool retain = true, int qos = 0) {
+  mqttClient.publish(topic, payload, retain, qos);
+}
+
+void mqtt_pub_status(const String& status) {
+  mqtt_pub(statusTopic, status);
+}

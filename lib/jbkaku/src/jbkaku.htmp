@@ -12,14 +12,17 @@
 
 #define WALL_UNIT 0
 
-#define TXPIN D1
-#define RXPIN D2
+#define TXPIN D2
+#define RXPIN D1
 
 #define KAKU_ADDRESS KAKU_ADDRESS_WALL
 
 // https://bitbucket.org/fuzzillogic/433mhzforarduino
 #include <NewRemoteReceiver.h> 
 #include <NewRemoteTransmitter.h>
+#include <jbdebug.h>
+
+void codeReceived(unsigned int period, unsigned long address, unsigned long groupBit, unsigned long unit, unsigned long switchType, boolean dimLevelPresent, byte dimLevel);
 
 typedef unsigned long t_kakuaddress;
 
@@ -51,27 +54,50 @@ CodeReceivedCB _codeReceivedCB;
 // code 2^3=8 times.
 NewRemoteTransmitter transmitter(KAKU_ADDRESS, TXPIN, 264, 4);
 
-void codeReceived(unsigned int period, unsigned long address, unsigned long groupBit, unsigned long unit, unsigned long switchType, boolean dimLevelPresent, byte dimLevel) {
-  if ((address == KAKU_ADDRESS_REMOTE) || (address == KAKU_ADDRESS_WALL)) {
-    _codeReceivedCB(address, groupBit, unit, switchType);
-  }
-}
+
 
 void startReceiver(CodeReceivedCB codeReceivedCB) {
+  Serial.println("Testcall");
   _codeReceivedCB = codeReceivedCB;
-  NewRemoteReceiver::init(RXPIN,2,codeReceived);
+
+  codeReceived(1,KAKU_ADDRESS_WALL,3,4,5,true,6);
+  Serial.println("Initializing KaKu receiver");
+  NewRemoteReceiver::init(5,2,codeReceived);
+  PRINTLN("Initialized KaKu receiver on pin ",RXPIN);
 }
 
 
 void setLightsOn() {
     PRINTLNS("Switching all on...");
-    transmitter.sendUnit(WALL_UNIT, true);
+    //transmitter.sendUnit(WALL_UNIT, true);
 }
 
 void setLightsOff() {
     PRINTLNS("Switching all off..");
-    transmitter.sendUnit(WALL_UNIT, false);
+    //transmitter.sendUnit(WALL_UNIT, false);
 }
 
+void codeReceived(unsigned int period, unsigned long address, unsigned long groupBit, unsigned long unit, unsigned long switchType, boolean dimLevelPresent, byte dimLevel) {
+  Serial.print("Code (address): ");
+  Serial.println(address);
+  Serial.print(" Period: ");
+  Serial.println(period);
+  Serial.print(" unit: ");
+  Serial.println(unit);
+  Serial.print(" groupBit: ");
+  Serial.println(groupBit);
+  Serial.print(" switchType: ");
+  Serial.println(switchType);
 
+  if (dimLevelPresent){
+    Serial.print(" dimLevel: ");
+    Serial.println(dimLevel);    
+  }
+
+  if ((address == KAKU_ADDRESS_REMOTE) || (address == KAKU_ADDRESS_WALL)) {
+    _codeReceivedCB(address, groupBit, unit, switchType);
+  } else {
+    PRINTLNS("Address does not match");
+  }
+}
 #endif
