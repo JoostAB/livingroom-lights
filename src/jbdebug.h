@@ -29,10 +29,16 @@
 // #define DEBUG_ESP_WIFI
 // #define DEBUG_ESP_PORT
 
+#ifdef SERIALBAUDRATE
+#define _DEFSPEED SERIALBAUDRATE
+#else
+#define _DEFSPEED 115200
+#endif
+
 #if DEBUGLOG
 #define IFDEBUG(s)                   { s }
-#define DEBUGSTART(s)                { Serial.begin(115200); }
-#define DEBUGSTARTDEF                  DEBUGSTART(115200)
+#define DEBUGSTART(s)                { Serial.begin(s); }
+#define DEBUGSTARTDEF                  DEBUGSTART(_DEFSPEED)
 #define PRINTS(s)                    { Serial.print(F(s)); }
 #define PRINTDS(s)                   { Serial.print(s); }
 #define PRINT(s,v)                   { Serial.print(F(s)); Serial.print(v); }
