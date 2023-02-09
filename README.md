@@ -24,7 +24,7 @@ Alternative libraries:
 
 ## Todo:
 
-- [X] Implement a wifi manager (Will be done in this branch)
+- [X] Implement a wifi manager
 - [ ] ESP32 compatibility
 - [ ] OTA (startable using MQTT command)
 - [ ] Autodiscovery in HomeAssistant

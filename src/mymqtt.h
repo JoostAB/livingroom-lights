@@ -7,8 +7,9 @@
 #include <WiFi.h>
 #endif
 #include <WiFiManager.h>
-
 #include <PubSubClient.h>
+
+#define PORTAL_AP_NAME "HomeLight-config"
 
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
@@ -87,6 +88,14 @@ void mqtt_setStatus(const char* status) {
   )
 }
 
+void mqtt_start_configPortal() {
+  wifiManager.startConfigPortal(PORTAL_AP_NAME);
+}
+
+void mqtt_start_configWeb() {
+  wifiManager.startWebPortal();
+}
+
 void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   DynamicJsonDocument doc(1024);
   doc["sender"] = sender;
@@ -100,16 +109,17 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
   mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
 }
 
-void _mqtt_wifiManConfigModeCallback (WiFiManager *myWiFiManager) {
-  PRINTLN("Entering Config mode at ", myWiFiManager->getConfigPortalSSID())
-  PRINTLN("IP address: ", WiFi.softAPIP())
-}
+// void _mqtt_wifiManConfigModeCallback (WiFiManager *myWiFiManager) {
+//   PRINTLN("Entering Config mode at ", myWiFiManager->getConfigPortalSSID())
+//   PRINTLN("IP address: ", WiFi.softAPIP())
+// }
 
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
   
-  wifiManager.setAPCallback(_mqtt_wifiManConfigModeCallback);
-  wifiManager.autoConnect("HomeLight-config");
+  //wifiManager.setAPCallback(_mqtt_wifiManConfigModeCallback);
+  wifiManager.autoConnect(PORTAL_AP_NAME);
+
   PRINTLN("WiFi connected with IP address: ", WiFi.localIP())
 
   mqttClient.setServer("192.168.0.10", 1883);

@@ -4,6 +4,8 @@
 
 const char* cmdOn = "ON";
 const char* cmdOff = "OFF";
+const char* cmdReCfg = "RECFG";
+const char* cmdWebCfg = "WEBCFG";
 
 #include <jbdebug.h>
 #include <mykaku.h>
@@ -11,6 +13,14 @@ const char* cmdOff = "OFF";
 #include <Ticker.h>
 
 Ticker ledflash;
+
+/**
+ * ISR to toggle the builtin LED for status info
+ */
+void flashLed() {
+  int state = digitalRead(LED_BUILTIN);
+  digitalWrite(LED_BUILTIN, !state);  
+}
 
 /**
  * Is called when a valid KaKu command is received over 433 Mhz
@@ -33,19 +43,22 @@ void MQTTCmdReceived(const char* cmd) {
   if (strcmp(cmdOn, cmd) == 0) {
     kaku_setLightsOn();
     mqtt_setStatus(cmdOn);
-  } else {
+  } else if (strcmp(cmdOff, cmd) == 0) {
     kaku_setLightsOff();
     mqtt_setStatus(cmdOff);
+  } else if (strcmp(cmdReCfg, cmd) == 0) {
+    ledflash.attach(0.3, flashLed);
+    mqtt_start_configPortal();
+    ledflash.detach();
+  } else if (strcmp(cmdWebCfg, cmd) == 0) {
+    ledflash.attach(0.3, flashLed);
+    mqtt_start_configWeb();
+    ledflash.detach();
+  } else {
+    PRINTLN("Onknown command received: ", cmd)
   }
 }
 
-/**
- * ISR to toggle the builtin LED for status info
- */
-void flashLed() {
-  int state = digitalRead(LED_BUILTIN);
-  digitalWrite(LED_BUILTIN, !state);  
-}
 
 void setup() {
   DEBUGSTARTDEF
@@ -55,9 +68,9 @@ void setup() {
   
   ledflash.attach(0.3, flashLed);
 
-  kaku_start(kakuReceived);
   mqtt_start(MQTTCmdReceived);
-
+  kaku_start(kakuReceived);
+  
   ledflash.detach();
 }
 
