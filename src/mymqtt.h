@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <jbdebug.h>
-
+#include <ArduinoJson.h>
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #elif defined(ESP32)
@@ -18,7 +18,7 @@ const String mainTopic = "homelight/livingroom/main/";
 const String cmdTopic = mainTopic + "cmd";
 const String statusTopic = mainTopic + "status";
 const String willTopic = mainTopic + "lwt";
-const String tstTopic = mainTopic + "test";
+const String kakuTopic = mainTopic + "kaku";
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -79,10 +79,36 @@ void mqtt_setStatus(const char* status) {
     _mqtt_reconnect();
   }
   mqttClient.publish(statusTopic.c_str(), status, true);
+  IFDEBUG(
+    if (strcmp(cmdOn, status) == 0) {
+      digitalWrite(LED_BUILTIN, LOW);
+    } else {
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+  )
+}
+
+void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
+  DynamicJsonDocument doc(1024);
+  doc["sender"] = sender;
+  doc["groupBit"] = groupBit;
+  doc["unit"] = unit;
+  doc["switchType"] = switchType;
+
+  String output;
+  serializeJson(doc, output);
+
+  mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
 }
 
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
+  
+  IFDEBUG( 
+    pinMode(LED_BUILTIN, OUTPUT); 
+    digitalWrite(LED_BUILTIN, HIGH);
+  )
+  
   PRINTLN("Connecting to ", ssid)
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);

@@ -1,15 +1,17 @@
 #include <Arduino.h>
 #define DEBUGLOG 1
 
+const char* cmdOn = "ON";
+const char* cmdOff = "OFF";
+
 #include <jbdebug.h>
 #include <mykaku.h>
 #include <mymqtt.h>
 
-const char* cmdOn = "ON";
-const char* cmdOff = "OFF";
 
 void kakuReceived(t_kakuaddress sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   PRINTLN("KAKU command received from ", sender)
+  mqtt_kakucmd(sender, groupBit, unit, switchType);
   if (switchType == 1) {
     mqtt_setStatus(cmdOn);
   } else {
@@ -19,8 +21,6 @@ void kakuReceived(t_kakuaddress sender, unsigned long groupBit, unsigned long un
 
 void MQTTCmdReceived(const char* cmd) {
   PRINTLN("MQTT command received: ", cmd);
-  int sc = strcmp(cmdOn, cmd);
-  PRINTLN("Stringcompare returned: ", sc);
   if (strcmp(cmdOn, cmd) == 0) {
     kaku_setLightsOn();
     mqtt_setStatus(cmdOn);

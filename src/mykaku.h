@@ -56,15 +56,11 @@ void kaku_start(CodeReceivedCB codeReceivedCB) {
   PRINTLNS("Initializing KaKu receiver");
   NewRemoteReceiver::init(5,2,codeReceived);
   PRINTLN("Initialized KaKu receiver on pin ",RXPIN);
-  IFDEBUG( 
-    pinMode(LED_BUILTIN, OUTPUT); 
-    digitalWrite(LED_BUILTIN, HIGH);
-  )
+  
 }
 
 void kaku_setLightsOn() {
     PRINTLNS("Switching all on...");
-    IFDEBUG(digitalWrite(LED_BUILTIN, LOW);)
     NewRemoteReceiver::disable();
     transmitter.sendUnit(WALL_UNIT, true);
     NewRemoteReceiver::enable();
@@ -72,7 +68,6 @@ void kaku_setLightsOn() {
 
 void kaku_setLightsOff() {
     PRINTLNS("Switching all off..");
-    IFDEBUG(digitalWrite(LED_BUILTIN, HIGH);)
     NewRemoteReceiver::disable();
     transmitter.sendUnit(WALL_UNIT, false);
     NewRemoteReceiver::enable();
