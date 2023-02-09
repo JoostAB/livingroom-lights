@@ -55,7 +55,7 @@ void MQTTCmdReceived(const char* cmd) {
     mqtt_start_configWeb();
     ledflash.detach();
   } else {
-    PRINTLN("Onknown command received: ", cmd)
+    PRINTLN("Unknown command received: ", cmd)
   }
 }
 
@@ -72,6 +72,7 @@ void setup() {
   kaku_start(kakuReceived);
   
   ledflash.detach();
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
