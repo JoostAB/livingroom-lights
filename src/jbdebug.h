@@ -1,12 +1,9 @@
 /**
- * @file debug.h
- * @author Joost Bloemsma (joost.a@bloemsma.net)
+ * @file jbdebug.h
  * @brief Some macros to enabled debuglogging.
- * @version 1.0
+ * @author JoostAB (https://github.com/JoostAB)
+ * @version 0.1
  * @date 2022-01-06
- * 
- * @copyright Copyright (c) 2022
- * 
  * By passing the DEBUGLOG=1 buildflag, these macro's are enabled and will log to std Serial.
  * It will also start the default serial output, using the baudrate set with SERIALBAUDRATE, either 
  * defined or passed as buildflag.

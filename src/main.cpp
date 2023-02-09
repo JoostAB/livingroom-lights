@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ * @brief 
+ * @author JoostAB (https://github.com/JoostAB)
+ * @version 0.1
+ * @date 2023-02-09
+ */
 #include <Arduino.h>
 
 #define DEBUGLOG 1
@@ -58,7 +65,6 @@ void MQTTCmdReceived(const char* cmd) {
     PRINTLN("Unknown command received: ", cmd)
   }
 }
-
 
 void setup() {
   DEBUGSTARTDEF

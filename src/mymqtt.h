@@ -1,3 +1,14 @@
+/**
+ * @file mymqtt.h
+ * @brief 
+ * @author JoostAB (https://github.com/JoostAB)
+ * @version 0.1
+ * @date 2023-02-09
+ */
+# pragma once
+#ifndef __MY_MQTT_H__
+#define __MY_MQTT_H__
+
 #include <Arduino.h>
 #include <jbdebug.h>
 #include <ArduinoJson.h>
@@ -132,3 +143,5 @@ void mqtt_loop() {
   }
   mqttClient.loop();
 }
+
+#endif // __MY_MQTT_H__
