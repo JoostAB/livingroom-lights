@@ -1,3 +1,5 @@
+![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/compileapp.yml/badge.svg)
+
 # Livingroom lights
 
 Switches the lights in the livingroom using KlikAanKlikUit switches.
