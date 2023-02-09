@@ -10,10 +10,11 @@
 #define __MY_WIFI_H__
 
 #include <Arduino.h>
-#include <FS.h>
-#ifdef ESP32
-  #include <SPIFFS.h>
-#endif
+// #include <FS.h>
+// #ifdef ESP32
+//   #include <SPIFFS.h>
+// #endif
+#include <LittleFS.h>
 
 #include <jbdebug.h>
 
@@ -70,7 +71,7 @@ void _wifi_saveCfgCb () {
 bool _wifi_fsBegin() {
   if (_fsBegun) return true;
   PRINTLNS("Mounting filesystem for parameters")
-  if (!SPIFFS.begin()) {
+  if (!LittleFS.begin()) {
     PRINTLNS("Failed to mount filesystem")
     return false;
   }
@@ -85,7 +86,7 @@ bool _wifi_cfg_read() {
 
   if (!_wifi_fsBegin()) return false;
 
-  File cfgFile = SPIFFS.open(cfgFilename, "r");
+  File cfgFile = LittleFS.open(cfgFilename, "r");
   if (cfgFile) {
     PRINTLN("Reading config file: ", cfgFilename);
     size_t size = cfgFile.size();
@@ -133,7 +134,7 @@ bool _wifi_cfg_write() {
   json["mqtt_password"] = _mqtt_password;
   json["mqtt_topic"] = _mqtt_topic;
 
-  File cfgFile = SPIFFS.open(cfgFilename,"w");
+  File cfgFile = LittleFS.open(cfgFilename,"w");
 
   if (!cfgFile) {
     PRINTLN("Error opening file ", cfgFilename)
