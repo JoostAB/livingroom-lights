@@ -14,9 +14,9 @@ Alternative libraries:
 
 > **_Note:_** The NewRemoteSwitch library can be downloaded from https://github.com/1technophile/NewRemoteSwitch. This is also a dependency in platformio_envs.ini.
 
-> **_Waring:_** This version only works with ESP8266 devices. For some reason I can't get the NewRemoteSwitch library to work correctly on ESP32
+> **_Warning:_** This version only works with ESP8266 devices. For some reason I can't get the NewRemoteSwitch library to work correctly on ESP32
 
-## Enhancements since version 1:
+## Enhancements since initial version:
 
 - Listens to actions from actual remotes
 - Listens to MQTT commands
@@ -30,3 +30,5 @@ Alternative libraries:
 - [ ] Autodiscovery in HomeAssistant
 - [ ] Training option for KaKu addresses
 - [ ] Dimming
+- [X] Use LED_BUILTIN for status info (connecting etc)
+- [ ] Cleanup code (ongoing project ;))
