@@ -15,6 +15,7 @@ const char* cmdReCfg = "RECFG";
 const char* cmdWebCfg = "WEBCFG";
 
 #include <jbdebug.h>
+#include <mywifi.h>
 #include <mykaku.h>
 #include <mymqtt.h>
 #include <Ticker.h>
@@ -55,11 +56,11 @@ void MQTTCmdReceived(const char* cmd) {
     mqtt_setStatus(cmdOff);
   } else if (strcmp(cmdReCfg, cmd) == 0) {
     ledflash.attach(0.3, flashLed);
-    mqtt_start_configPortal();
+    wifi_start_configPortal();
     ledflash.detach();
   } else if (strcmp(cmdWebCfg, cmd) == 0) {
     ledflash.attach(0.3, flashLed);
-    mqtt_start_configWeb();
+    wifi_start_configWeb();
     ledflash.detach();
   } else {
     PRINTLN("Unknown command received: ", cmd)
@@ -74,6 +75,7 @@ void setup() {
   
   ledflash.attach(0.3, flashLed);
 
+  wifi_connect();
   mqtt_start(MQTTCmdReceived);
   kaku_start(kakuReceived);
   
