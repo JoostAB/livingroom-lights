@@ -10,10 +10,6 @@
 #define __MY_WIFI_H__
 
 #include <Arduino.h>
-// #include <FS.h>
-// #ifdef ESP32
-//   #include <SPIFFS.h>
-// #endif
 #include <LittleFS.h>
 
 #include <jbdebug.h>
@@ -55,6 +51,12 @@ void wifi_start_configPortal() {
   wifiManager.startConfigPortal(PORTAL_AP_NAME);
 }
 
+void wifi_cleanStart() {
+  PRINTLNS("Clearing settings and restart")
+  wifiManager.resetSettings();
+  delay(2000);
+  ESP.restart();
+}
 /**
  * @brief Starts the WifiManager configuration page
  * 

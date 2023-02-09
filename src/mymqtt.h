@@ -56,7 +56,8 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void _mqtt_reconnect() {
-  while (!mqttClient.connected()) {
+  int tryCount = 0;
+  while (!mqttClient.connected() && (tryCount < 5)) {
     PRINTLN("Attempting MQTT connection to ", wifi_get_mqttServer())
     String clientId = "homelight-livingroom-";
     clientId += String(random(0xffff), HEX);
@@ -76,14 +77,18 @@ void _mqtt_reconnect() {
       mqttClient.publish(willTopic.c_str(), "online", true);
       // ... and resubscribe
       mqttClient.subscribe(cmdTopic.c_str());
+      return;
     } else {
       PRINTS("failed, rc=")
       PRINTDS(mqttClient.state())
       PRINTLNS(" try again in 5 seconds")
       // Wait 5 seconds before retrying
       delay(5000);
+      tryCount ++;
     }
   }
+  PRINTLNS("Connecting not possible")
+  wifi_cleanStart();
 }
 
 void mqtt_setStatus(const char* status) {
