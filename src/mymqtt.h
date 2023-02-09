@@ -6,13 +6,12 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
-
+#include <WiFiManager.h>
 #include <PubSubClient.h>
 
-typedef std::function<void(const char* cmd)> MqttCmdReceived;
+#define PORTAL_AP_NAME "HomeLight-config"
 
-const char* ssid = "jojodomo";
-const char* password = "jojoDomo";
+typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
 const String mainTopic = "homelight/livingroom/main/";
 const String cmdTopic = mainTopic + "cmd";
@@ -20,6 +19,7 @@ const String statusTopic = mainTopic + "status";
 const String willTopic = mainTopic + "lwt";
 const String kakuTopic = mainTopic + "kaku";
 
+WiFiManager wifiManager;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
@@ -88,6 +88,14 @@ void mqtt_setStatus(const char* status) {
   )
 }
 
+void mqtt_start_configPortal() {
+  wifiManager.startConfigPortal(PORTAL_AP_NAME);
+}
+
+void mqtt_start_configWeb() {
+  wifiManager.startWebPortal();
+}
+
 void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   DynamicJsonDocument doc(1024);
   doc["sender"] = sender;
@@ -101,22 +109,16 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
   mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
 }
 
+// void _mqtt_wifiManConfigModeCallback (WiFiManager *myWiFiManager) {
+//   PRINTLN("Entering Config mode at ", myWiFiManager->getConfigPortalSSID())
+//   PRINTLN("IP address: ", WiFi.softAPIP())
+// }
+
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
   
-  IFDEBUG( 
-    pinMode(LED_BUILTIN, OUTPUT); 
-    digitalWrite(LED_BUILTIN, HIGH);
-  )
-  
-  PRINTLN("Connecting to ", ssid)
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    PRINTS(".")
-  }
+  //wifiManager.setAPCallback(_mqtt_wifiManConfigModeCallback);
+  wifiManager.autoConnect(PORTAL_AP_NAME);
 
   PRINTLN("WiFi connected with IP address: ", WiFi.localIP())
 
