@@ -1,29 +1,41 @@
+/**
+ * @file mymqtt.h
+ * @brief 
+ * @author JoostAB (https://github.com/JoostAB)
+ * @version 0.1
+ * @date 2023-02-09
+ */
+# pragma once
+#ifndef __MY_MQTT_H__
+#define __MY_MQTT_H__
+
 #include <Arduino.h>
 #include <jbdebug.h>
-#include <ArduinoJson.h>
-#ifdef ESP8266
-#include <ESP8266WiFi.h>
-#elif defined(ESP32)
-#include <WiFi.h>
-#endif
-#include <WiFiManager.h>
-#include <PubSubClient.h>
+#include <mywifi.h>
 
-#define PORTAL_AP_NAME "HomeLight-config"
+#include <ArduinoJson.h>
+#include <PubSubClient.h>
 
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
-const String mainTopic = "homelight/livingroom/main/";
-const String cmdTopic = mainTopic + "cmd";
-const String statusTopic = mainTopic + "status";
-const String willTopic = mainTopic + "lwt";
-const String kakuTopic = mainTopic + "kaku";
+String mainTopic;
+String cmdTopic;
+String statusTopic;
+String willTopic;
+String kakuTopic;
 
-WiFiManager wifiManager;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
 MqttCmdReceived _mqttCmdReceived;
+
+void _mqtt_setTopics() {
+  mainTopic = wifi_get_mqttTopic();
+  cmdTopic = mainTopic + "cmd";
+  statusTopic = mainTopic + "status";
+  willTopic = mainTopic + "lwt";
+  kakuTopic = mainTopic + "kaku";
+}
 
 void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
   IFDEBUG(
@@ -45,14 +57,14 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
 void _mqtt_reconnect() {
   while (!mqttClient.connected()) {
-    PRINTLNS("Attempting MQTT connection...")
+    PRINTLN("Attempting MQTT connection to ", wifi_get_mqttServer())
     String clientId = "homelight-livingroom-";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
     bool rc = mqttClient.connect(
       clientId.c_str(),
-      "mqtt",
-      "mqtt_user",
+      wifi_get_mqttUser(),
+      wifi_get_mqttPassword(),
       willTopic.c_str(),
       0,
       true,
@@ -88,14 +100,6 @@ void mqtt_setStatus(const char* status) {
   )
 }
 
-void mqtt_start_configPortal() {
-  wifiManager.startConfigPortal(PORTAL_AP_NAME);
-}
-
-void mqtt_start_configWeb() {
-  wifiManager.startWebPortal();
-}
-
 void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   DynamicJsonDocument doc(1024);
   doc["sender"] = sender;
@@ -109,20 +113,10 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
   mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
 }
 
-// void _mqtt_wifiManConfigModeCallback (WiFiManager *myWiFiManager) {
-//   PRINTLN("Entering Config mode at ", myWiFiManager->getConfigPortalSSID())
-//   PRINTLN("IP address: ", WiFi.softAPIP())
-// }
-
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
-  
-  //wifiManager.setAPCallback(_mqtt_wifiManConfigModeCallback);
-  wifiManager.autoConnect(PORTAL_AP_NAME);
-
-  PRINTLN("WiFi connected with IP address: ", WiFi.localIP())
-
-  mqttClient.setServer("192.168.0.10", 1883);
+  _mqtt_setTopics();
+  mqttClient.setServer(wifi_get_mqttServer(), wifi_get_mqttPort());
   mqttClient.setCallback(_mqtt_callback);
 }
 
@@ -132,3 +126,5 @@ void mqtt_loop() {
   }
   mqttClient.loop();
 }
+
+#endif // __MY_MQTT_H__

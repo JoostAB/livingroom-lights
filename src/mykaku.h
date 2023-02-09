@@ -1,10 +1,22 @@
+/**
+ * @file mykaku.h
+ * @brief 
+ * @author JoostAB (https://github.com/JoostAB)
+ * @version 0.1
+ * @date 2023-02-09
+ */
+# pragma once
+#ifndef __MY_KAKU_H__
+#define __MY_KAKU_H__
+
 #include <Arduino.h>
 #include <NewRemoteReceiver.h> 
 #include <NewRemoteTransmitter.h>
 #include <jbdebug.h>
 
-#define TXPIN D2
-#define RXPIN D1
+
+#define TXPIN D2  // Pin for Transmitter
+#define RXPIN D1  // Pin for Receiver
 
 #define KAKU_ADDRESS_REMOTE 0x19FBA02 // 27245058
 #define KAKU_REMOTE_UNIT0 0
@@ -25,21 +37,17 @@ NewRemoteTransmitter transmitter(KAKU_ADDRESS_WALL, TXPIN, 264, 4);
 CodeReceivedCB _codeReceivedCB;
 
 void codeReceived(unsigned int period, unsigned long address, unsigned long groupBit, unsigned long unit, unsigned long switchType, boolean dimLevelPresent, byte dimLevel) {
-  Serial.print("Code (address): ");
-  Serial.println(address);
-  Serial.print(" Period: ");
-  Serial.println(period);
-  Serial.print(" unit: ");
-  Serial.println(unit);
-  Serial.print(" groupBit: ");
-  Serial.println(groupBit);
-  Serial.print(" switchType: ");
-  Serial.println(switchType);
+  PRINTLN("Code (address): ", address);
+  PRINTLN("Period: ", period);
+  PRINTLN("unit: ", unit);
+  PRINTLN("groupBit: ", groupBit);
+  PRINTLN("switchType: ", switchType);
 
-  if (dimLevelPresent){
-    Serial.print(" dimLevel: ");
-    Serial.println(dimLevel);    
-  }
+  IFDEBUG(
+    if (dimLevelPresent){
+      PRINTLN("dimLevel: ", dimLevel);    
+    }
+  )
 
   if (_codeReceivedCB != nullptr) {
     _codeReceivedCB(address, groupBit, unit, switchType);
@@ -54,21 +62,26 @@ void kaku_start(CodeReceivedCB codeReceivedCB) {
     PRINTLNS("No callback for KAKU CodeReceived");
   }
   PRINTLNS("Initializing KaKu receiver");
-  NewRemoteReceiver::init(5,2,codeReceived);
+  NewRemoteReceiver::init(RXPIN,2,codeReceived);
   PRINTLN("Initialized KaKu receiver on pin ",RXPIN);
   
 }
 
+void _kaku_send_unit(bool sw) {
+  // Disable receiver while sending command
+  NewRemoteReceiver::disable();
+  transmitter.sendUnit(WALL_UNIT, sw);
+  NewRemoteReceiver::enable();
+}
+
 void kaku_setLightsOn() {
-    PRINTLNS("Switching all on...");
-    NewRemoteReceiver::disable();
-    transmitter.sendUnit(WALL_UNIT, true);
-    NewRemoteReceiver::enable();
+  PRINTLNS("Switching all on...");
+  _kaku_send_unit(true);
 }
 
 void kaku_setLightsOff() {
-    PRINTLNS("Switching all off..");
-    NewRemoteReceiver::disable();
-    transmitter.sendUnit(WALL_UNIT, false);
-    NewRemoteReceiver::enable();
+  PRINTLNS("Switching all off..");
+  _kaku_send_unit(false);
 }
+
+#endif // __MY_KAKU_H__
