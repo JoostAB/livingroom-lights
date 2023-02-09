@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout
-      - uses: actions/cache
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v1
         with:
           path: |
             ~/.cache/pip
