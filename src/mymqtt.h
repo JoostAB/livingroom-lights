@@ -46,6 +46,7 @@ void _mqtt_setTopics() {
   statusTopic = mainTopic  + "/" + TOPIC_STATUS;
   willTopic = mainTopic  + "/" + TOPIC_LWT;
   kakuTopic = mainTopic  + "/" + TOPIC_KAKU;
+
   PRINTLN("Main topic: ", mainTopic)
   PRINTLN("Command topic: ", cmdTopic)
   PRINTLN("Status topic: ", statusTopic)
@@ -81,9 +82,13 @@ void _mqtt_config_hassdiscovery() {
   doc["stat_t"] = "~/" + String(TOPIC_STATUS);
   doc["cmd_t"] = "~/" + String(TOPIC_CMD);
   doc["ic"] = "mdi:lightbulb";
+  doc["uniq_id"] = String(HASS_ENTITYNAME) + "_" + String(ESP.getChipId());
 
   String output;
   serializeJson(doc, output);
+
+  PRINTLNS("configuring HASS Autodiscovery: ")
+  PRINTLNSA(output)
 
   mqttClient.publish(hasstopic.c_str(), output.c_str(), true);
 }
