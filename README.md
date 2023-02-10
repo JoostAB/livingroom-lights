@@ -24,11 +24,15 @@ But since this library is nowhere to be found anymore, some alternatives are lis
 ## Todo:
 
 - [X] Implement a wifi manager
-- [ ] ESP32 compatibility
-- [ ] OTA (startable using MQTT command)
+- [X] MQTT config using WiFiManager
+- [ ] ArduinoOTA (startable using MQTT command)
 - [ ] Autodiscovery in HomeAssistant
-- [ ] Training option for KaKu addresses
-- [ ] Dimming
 - [X] Use LED_BUILTIN for status info (connecting etc)
 - [ ] Cleanup code (ongoing project :wink: )
 - [ ] Add unit tests
+- [ ] ESP32 compatibility
+
+## NTH (Nice to haves, so maybe)
+- [ ] Own web interface for config
+- [ ] Training option for KaKu addresses
+- [ ] Dimming
