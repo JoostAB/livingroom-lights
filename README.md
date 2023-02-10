@@ -31,3 +31,4 @@ But since this library is nowhere to be found anymore, some alternatives are lis
 - [ ] Dimming
 - [X] Use LED_BUILTIN for status info (connecting etc)
 - [ ] Cleanup code (ongoing project :wink: )
+- [ ] Add unit tests
