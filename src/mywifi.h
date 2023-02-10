@@ -17,6 +17,11 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
+
+#ifdef ARDUINO_OTA
+#include <ArduinoOTA.h>
+#endif
+
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
 
@@ -217,13 +222,59 @@ bool _wifi_cfg_write() {
   return false;
 }
 
+#ifdef ARDUINO_OTA
+void wifi_start_OTA() {
+  PRINTLNS("Setting up OTA")
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else {  // U_FS
+      type = "filesystem";
+    }
+
+    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+    PRINTLN("Start updating ", type)
+  });
+  ArduinoOTA.onEnd([]() {
+    PRINTLNS("OTA end")
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    int p = (progress / (total / 100));
+    char pb[51] = "==================================================";
+    pb[p/2] = '\0';
+    PRINT("Progress: ", pb)
+    PRINTF(" %u precent", p)
+    PRINTLF
+    //PRINTF("Progress: %u%%\r", (progress / (total / 100)))
+    //PRINTDS(".")
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    PRINTF("Error[%u]: \n", error)
+
+    if (error == OTA_AUTH_ERROR) {
+      PRINTLNS("Auth Failed")
+    } else if (error == OTA_BEGIN_ERROR) {
+      PRINTLNS("Begin Failed")
+    } else if (error == OTA_CONNECT_ERROR) {
+      PRINTLNS("Connect Failed")
+    } else if (error == OTA_RECEIVE_ERROR) {
+      PRINTLNS("Receive Failed")
+    } else if (error == OTA_END_ERROR) {
+      PRINTLNS("End Failed")
+    }
+  });
+  ArduinoOTA.begin();
+}
+#endif
+
 /**
  * @brief Connect to wifi using WiFiManager
  * 
  * @return true if success
  * @return false if failure
  */
-bool wifi_connect() {
+bool wifi_start() {
   
   _wifi_cfg_read();
 
@@ -255,10 +306,24 @@ bool wifi_connect() {
 
       _wifi_cfg_write();
     }
+
+    #ifdef ARDUINO_OTA
+    wifi_start_OTA();
+    #endif
     return true;
   } else {
     PRINTLNS("Not connected to wifi...!")
   }
   return false;
+}
+
+/**
+ * @brief To be called as often as possible in main loop
+ * 
+ */
+void wifi_loop() {
+  #ifdef ARDUINO_OTA
+  ArduinoOTA.handle();
+  #endif
 }
 #endif // __MY_WIFI_H__

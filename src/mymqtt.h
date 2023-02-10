@@ -15,7 +15,6 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 
-#define HASS_AUTODISCOVERY
 #define HASS_ENTITYNAME "Woonkamerlicht"
 
 #ifdef TESTCMD
@@ -109,10 +108,11 @@ void _mqtt_config_hassdiscovery() {
   String output;
   serializeJson(doc, output);
 
-  PRINTLNS("configuring HASS Autodiscovery: ")
+  mqttClient.publish(hasstopic.c_str(), output.c_str(), true);
+
+  PRINTLNS("Configured HASS Autodiscovery: ")
   PRINTLNSA(output)
 
-  mqttClient.publish(hasstopic.c_str(), output.c_str(), true);
 }
 #endif
 

@@ -11,8 +11,6 @@
 
 #include <Arduino.h>
 
-#define DEBUGLOG 1
-
 const char* cmdOn = "ON";
 const char* cmdOff = "OFF";
 const char* cmdReCfg = "RECFG";
