@@ -1,4 +1,3 @@
-![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/compileapp.yml/badge.svg)
 ![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/build.yml/badge.svg)
 
 # Livingroom lights
