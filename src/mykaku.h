@@ -9,10 +9,9 @@
 #ifndef __MY_KAKU_H__
 #define __MY_KAKU_H__
 
-#include <Arduino.h>
+#include <general.h>
 #include <NewRemoteReceiver.h> 
 #include <NewRemoteTransmitter.h>
-#include <jbdebug.h>
 
 
 #define TXPIN D2  // Pin for Transmitter

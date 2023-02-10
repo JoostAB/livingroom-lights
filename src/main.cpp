@@ -5,27 +5,12 @@
  * @version 0.1
  * @date 2023-02-09
  */
-#include <Arduino.h>
-
-#define DEBUGLOG 1
-
-const char* cmdOn = "ON";
-const char* cmdOff = "OFF";
-const char* cmdReCfg = "RECFG";
-const char* cmdWebCfg = "WEBCFG";
-
-#include <jbdebug.h>
-#include <mywifi.h>
-#include <mykaku.h>
-#include <mymqtt.h>
-#include <Ticker.h>
-
-Ticker ledflash;
+#include <main.h>
 
 /**
  * ISR to toggle the builtin LED for status info
  */
-void flashLed() {
+void _flashLed_isr() {
   int state = digitalRead(LED_BUILTIN);
   digitalWrite(LED_BUILTIN, !state);  
 }
@@ -55,11 +40,11 @@ void MQTTCmdReceived(const char* cmd) {
     kaku_setLightsOff();
     mqtt_setStatus(cmdOff);
   } else if (strcmp(cmdReCfg, cmd) == 0) {
-    ledflash.attach(0.3, flashLed);
+    ledflash.attach(0.3, _flashLed_isr);
     wifi_start_configPortal();
     ledflash.detach();
   } else if (strcmp(cmdWebCfg, cmd) == 0) {
-    ledflash.attach(0.3, flashLed);
+    ledflash.attach(0.3, _flashLed_isr);
     wifi_start_configWeb();
     ledflash.detach();
   } else {
@@ -73,7 +58,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT); 
   digitalWrite(LED_BUILTIN, HIGH);
   
-  ledflash.attach(0.3, flashLed);
+  ledflash.attach(0.3, _flashLed_isr);
 
   wifi_connect();
   mqtt_start(MQTTCmdReceived);

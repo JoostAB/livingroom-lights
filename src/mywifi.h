@@ -9,10 +9,8 @@
 #ifndef __MY_WIFI_H__
 #define __MY_WIFI_H__
 
-#include <Arduino.h>
+#include <general.h>
 #include <LittleFS.h>
-
-#include <jbdebug.h>
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>

@@ -9,8 +9,7 @@
 #ifndef __MY_MQTT_H__
 #define __MY_MQTT_H__
 
-#include <Arduino.h>
-#include <jbdebug.h>
+#include <general.h>
 #include <mywifi.h>
 
 #include <ArduinoJson.h>
@@ -31,7 +30,11 @@ MqttCmdReceived _mqttCmdReceived;
 
 void _mqtt_setTopics() {
   mainTopic = wifi_get_mqttTopic();
-  cmdTopic = mainTopic + "cmd";
+  #ifdef TESTCMD
+    cmdTopic = mainTopic + "cmdtest";
+  #else
+    cmdTopic = mainTopic + "cmd";
+  #endif
   statusTopic = mainTopic + "status";
   willTopic = mainTopic + "lwt";
   kakuTopic = mainTopic + "kaku";
