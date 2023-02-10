@@ -1,3 +1,5 @@
+[![License: CC0-1.0](https://licensebuttons.net/l/zero/1.0/80x15.png)]
+
 ![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/build.yml/badge.svg)
 
 # Livingroom lights
