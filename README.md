@@ -1,4 +1,6 @@
-![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/compileapp.yml/badge.svg)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![Build](https://github.com/JoostAB/livingroom-lights/actions/workflows/build.yml/badge.svg)](https://github.com/JoostAB/livingroom-lights/actions/workflows/build.yml)
 
 # Livingroom lights
 
@@ -24,11 +26,15 @@ But since this library is nowhere to be found anymore, some alternatives are lis
 ## Todo:
 
 - [X] Implement a wifi manager
-- [ ] ESP32 compatibility
-- [ ] OTA (startable using MQTT command)
-- [ ] Autodiscovery in HomeAssistant
-- [ ] Training option for KaKu addresses
-- [ ] Dimming
+- [X] MQTT config using WiFiManager
+- [ ] ArduinoOTA (startable using MQTT command)
+- [X] Autodiscovery in HomeAssistant
 - [X] Use LED_BUILTIN for status info (connecting etc)
 - [ ] Cleanup code (ongoing project :wink: )
 - [ ] Add unit tests
+- [ ] ESP32 compatibility
+
+## NTH (Nice to haves, so maybe)
+- [ ] Own web interface for config
+- [ ] Training option for KaKu addresses
+- [ ] Dimming
