@@ -47,6 +47,12 @@ void MQTTCmdReceived(const char* cmd) {
     ledflash.attach(0.3, _flashLed_isr);
     wifi_start_configWeb();
     ledflash.detach();
+  } else if (strcmp(cmdOtaOn, cmd) == 0) {
+    wifi_start_OTA();
+    ledflash.attach(1.0, _flashLed_isr);
+  } else if (strcmp(cmdOtaOff, cmd) == 0) {
+    wifi_stop_OTA();
+    ledflash.detach();
   } else {
     PRINTLN("Unknown command received: ", cmd)
   }
@@ -60,7 +66,7 @@ void setup() {
   
   ledflash.attach(0.3, _flashLed_isr);
 
-  wifi_connect();
+  wifi_start();
   mqtt_start(MQTTCmdReceived);
   kaku_start(kakuReceived);
   
@@ -70,4 +76,5 @@ void setup() {
 
 void loop() {
   mqtt_loop();
+  wifi_loop();
 }

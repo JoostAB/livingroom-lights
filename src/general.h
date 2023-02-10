@@ -11,12 +11,12 @@
 
 #include <Arduino.h>
 
-#define DEBUGLOG 1
-
 const char* cmdOn = "ON";
 const char* cmdOff = "OFF";
 const char* cmdReCfg = "RECFG";
 const char* cmdWebCfg = "WEBCFG";
+const char* cmdOtaOn = "OTAON";
+const char* cmdOtaOff = "OTAOFF";
 
 #include <jbdebug.h>
 
