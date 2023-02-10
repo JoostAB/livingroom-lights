@@ -15,6 +15,18 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 
+#define HASS_AUTODISCOVERY
+#define HASS_ENTITYNAME "Woonkamerlicht"
+
+#ifdef TESTCMD
+  #define TOPIC_CMD "cmdtest"
+#else
+  #define TOPIC_CMD "cmd"
+#endif
+#define TOPIC_STATUS "status"
+#define TOPIC_LWT "lwt"
+#define TOPIC_KAKU "kaku"
+
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
 String mainTopic;
@@ -30,14 +42,15 @@ MqttCmdReceived _mqttCmdReceived;
 
 void _mqtt_setTopics() {
   mainTopic = wifi_get_mqttTopic();
-  #ifdef TESTCMD
-    cmdTopic = mainTopic + "cmdtest";
-  #else
-    cmdTopic = mainTopic + "cmd";
-  #endif
-  statusTopic = mainTopic + "status";
-  willTopic = mainTopic + "lwt";
-  kakuTopic = mainTopic + "kaku";
+  cmdTopic = mainTopic  + "/" + TOPIC_CMD;
+  statusTopic = mainTopic  + "/" + TOPIC_STATUS;
+  willTopic = mainTopic  + "/" + TOPIC_LWT;
+  kakuTopic = mainTopic  + "/" + TOPIC_KAKU;
+  PRINTLN("Main topic: ", mainTopic)
+  PRINTLN("Command topic: ", cmdTopic)
+  PRINTLN("Status topic: ", statusTopic)
+  PRINTLN("Will topic: ", willTopic)
+  PRINTLN("Kaku topic: ", kakuTopic)
 }
 
 void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
@@ -58,6 +71,24 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
   _mqttCmdReceived(chars);
 }
 
+#ifdef HASS_AUTODISCOVERY
+void _mqtt_config_hassdiscovery() {
+  PRINTLNS("Configuring HASS autodiscovery")
+  String hasstopic = "homeassistant/switch/" + String(HASS_ENTITYNAME) + "/config";
+  DynamicJsonDocument doc(1024);
+  doc["~"] = mainTopic;
+  doc["name"] = HASS_ENTITYNAME;
+  doc["stat_t"] = "~/" + String(TOPIC_STATUS);
+  doc["cmd_t"] = "~/" + String(TOPIC_CMD);
+  doc["ic"] = "mdi:lightbulb";
+
+  String output;
+  serializeJson(doc, output);
+
+  mqttClient.publish(hasstopic.c_str(), output.c_str(), true);
+}
+#endif
+
 void _mqtt_reconnect() {
   int tryCount = 0;
   while (!mqttClient.connected() && (tryCount < 5)) {
@@ -76,6 +107,9 @@ void _mqtt_reconnect() {
     );
     if (rc) {
       PRINTLNS("connected")
+      #ifdef HASS_AUTODISCOVERY
+      _mqtt_config_hassdiscovery();
+      #endif
       mqttClient.publish((mainTopic + "ip").c_str(), WiFi.localIP().toString().c_str(), true);
       mqttClient.publish(willTopic.c_str(), "online", true);
       // ... and resubscribe

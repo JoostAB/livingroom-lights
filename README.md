@@ -26,7 +26,7 @@ But since this library is nowhere to be found anymore, some alternatives are lis
 - [X] Implement a wifi manager
 - [X] MQTT config using WiFiManager
 - [ ] ArduinoOTA (startable using MQTT command)
-- [ ] Autodiscovery in HomeAssistant
+- [X] Autodiscovery in HomeAssistant
 - [X] Use LED_BUILTIN for status info (connecting etc)
 - [ ] Cleanup code (ongoing project :wink: )
 - [ ] Add unit tests

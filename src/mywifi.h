@@ -39,7 +39,14 @@ char* wifi_get_mqttServer() { return _mqtt_server; }
 int wifi_get_mqttPort() { return atoi(_mqtt_port); }
 char* wifi_get_mqttUser() { return _mqtt_user; }
 char* wifi_get_mqttPassword() { return _mqtt_password; }
-char* wifi_get_mqttTopic() { return _mqtt_topic; }
+char* wifi_get_mqttTopic() { 
+  size_t ln = strlen(_mqtt_topic);
+  if (_mqtt_topic[ln - 1] == '/') {
+    PRINTLNS("MQTT topic ends with /, stripping off")
+    _mqtt_topic[ln - 1] = '\0';
+  }
+  return _mqtt_topic; 
+}
 
 /**
  * @brief Starts the WifiManager configuration portal on own AP
