@@ -20,6 +20,7 @@
 
 #ifdef ARDUINO_OTA
 #include <ArduinoOTA.h>
+bool OTArunning = false;
 #endif
 
 #include <ArduinoJson.h>
@@ -265,7 +266,18 @@ void wifi_start_OTA() {
     }
   });
   ArduinoOTA.begin();
+  OTArunning = true;
 }
+
+void wifi_stop_OTA() {
+  PRINTLNS("Stopping OTA")
+  ArduinoOTA.end();
+  OTArunning = false;
+}
+#else
+// Dummy stub methods 
+void wifi_start_OTA() {}
+void wifi_stop_OTA() {}
 #endif
 
 /**
@@ -307,7 +319,7 @@ bool wifi_start() {
       _wifi_cfg_write();
     }
 
-    #ifdef ARDUINO_OTA
+    #if defined(ARDUINO_OTA) && defined(ARDUINO_OTA_ALWAYS)
     wifi_start_OTA();
     #endif
     return true;
@@ -323,7 +335,7 @@ bool wifi_start() {
  */
 void wifi_loop() {
   #ifdef ARDUINO_OTA
-  ArduinoOTA.handle();
+  if (OTArunning) ArduinoOTA.handle();
   #endif
 }
 #endif // __MY_WIFI_H__
