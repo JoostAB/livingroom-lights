@@ -35,10 +35,40 @@ const char* cfgFilename = "/wificfg.json";
 bool _saveCfg = false;
 bool _fsBegun = false;
 
+/**
+ * @brief Returns hostname of the mqtt server, as registered in config portal
+ * 
+ * @return char* 
+ */
 char* wifi_get_mqttServer() { return _mqtt_server; }
+
+/**
+ * @brief Returns port of the mqtt server, as registered in config portal
+ * 
+ * @return int 
+ */
 int wifi_get_mqttPort() { return atoi(_mqtt_port); }
+
+/**
+ * @brief Returns user of the mqtt server, as registered in config portal
+ * 
+ * @return char* 
+ */
 char* wifi_get_mqttUser() { return _mqtt_user; }
+
+/**
+ * @brief Returns user password of the mqtt server, as registered in config portal
+ * 
+ * @return char* 
+ */
 char* wifi_get_mqttPassword() { return _mqtt_password; }
+
+/**
+ * @brief Returns main mqtt topic, as registered in config portal. If the topic ends with 
+ * a forward slash, it is stripped
+ * 
+ * @return char* 
+ */
 char* wifi_get_mqttTopic() { 
   size_t ln = strlen(_mqtt_topic);
   if (_mqtt_topic[ln - 1] == '/') {
@@ -56,12 +86,17 @@ void wifi_start_configPortal() {
   wifiManager.startConfigPortal(PORTAL_AP_NAME);
 }
 
+/**
+ * @brief Clears all WiFiManager settings and reboots
+ * 
+ */
 void wifi_cleanStart() {
   PRINTLNS("Clearing settings and restart")
   wifiManager.resetSettings();
   delay(2000);
   ESP.restart();
 }
+
 /**
  * @brief Starts the WifiManager configuration page
  * 
@@ -70,11 +105,21 @@ void wifi_start_configWeb() {
   wifiManager.startWebPortal();
 }
 
+/**
+ * @brief Set the saveCfg flag to true
+ * 
+ */
 void _wifi_saveCfgCb () {
   PRINTLNS("Should save config")
   _saveCfg = true;
 }
 
+/**
+ * @brief Initializes filesystem is nessecary
+ * 
+ * @return true 
+ * @return false 
+ */
 bool _wifi_fsBegin() {
   if (_fsBegun) return true;
   PRINTLNS("Mounting filesystem for parameters")
@@ -87,7 +132,12 @@ bool _wifi_fsBegin() {
   return true;
 }
 
-
+/**
+ * @brief Reads and parses the configuration file
+ * 
+ * @return true if success
+ * @return false if failure
+ */
 bool _wifi_cfg_read() {
   PRINTLNS("Reading configuration from filesystem.")
 
@@ -128,6 +178,12 @@ bool _wifi_cfg_read() {
   return true;
 }
 
+/**
+ * @brief Writes the configuration file with the currently known settings
+ * 
+ * @return true if success
+ * @return false if failure
+ */
 bool _wifi_cfg_write() {
   PRINTLNS("Writing configuration to filesystem.")
 
@@ -164,6 +220,8 @@ bool _wifi_cfg_write() {
 /**
  * @brief Connect to wifi using WiFiManager
  * 
+ * @return true if success
+ * @return false if failure
  */
 bool wifi_connect() {
   

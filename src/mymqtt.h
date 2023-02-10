@@ -40,6 +40,11 @@ PubSubClient mqttClient(wifiClient);
 
 MqttCmdReceived _mqttCmdReceived;
 
+
+/**
+ * @brief Sets the mqtt topics based on main topic from wifi configuration
+ * 
+ */
 void _mqtt_setTopics() {
   mainTopic = wifi_get_mqttTopic();
   cmdTopic = mainTopic  + "/" + TOPIC_CMD;
@@ -54,6 +59,17 @@ void _mqtt_setTopics() {
   PRINTLN("Kaku topic: ", kakuTopic)
 }
 
+/**
+ * @brief Called eacht time an MQTT message comes in through one of
+ *        the subscribed topics
+ * 
+ * This will call the MqttCmdReceived callback function registered
+ * when calling mqtt_start.
+ * 
+ * @param topic The topic the message comes from
+ * @param payload Payload of the message
+ * @param length Length in bytes
+ */
 void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
   IFDEBUG(
     PRINTLNS("Received mqtt command :")
@@ -73,6 +89,12 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 #ifdef HASS_AUTODISCOVERY
+/**
+ * @brief Generates and published the configuration for HASS to enable autodiscovery.
+ * 
+ * A unique ID is generated from entity name and esp chip id.
+ * 
+ */
 void _mqtt_config_hassdiscovery() {
   PRINTLNS("Configuring HASS autodiscovery")
   String hasstopic = "homeassistant/switch/" + String(HASS_ENTITYNAME) + "/config";
@@ -94,12 +116,15 @@ void _mqtt_config_hassdiscovery() {
 }
 #endif
 
+/**
+ * @brief Will (re) connect to the mqtt broker. If it fails 5 successive times the 
+ * whole chip is rebooted to start the configuration portal
+ */
 void _mqtt_reconnect() {
   int tryCount = 0;
   while (!mqttClient.connected() && (tryCount < 5)) {
     PRINTLN("Attempting MQTT connection to ", wifi_get_mqttServer())
-    String clientId = "homelight-livingroom-";
-    clientId += String(random(0xffff), HEX);
+    String clientId = "homelight-livingroom-" + String(ESP.getChipId());
     // Attempt to connect
     bool rc = mqttClient.connect(
       clientId.c_str(),
@@ -133,6 +158,11 @@ void _mqtt_reconnect() {
   wifi_cleanStart();
 }
 
+/**
+ * @brief Published the current status (ON or OFF) to the status topic
+ * 
+ * @param status 
+ */
 void mqtt_setStatus(const char* status) {
   if (!mqttClient.connected()) {
     _mqtt_reconnect();
@@ -147,6 +177,14 @@ void mqtt_setStatus(const char* status) {
   )
 }
 
+/**
+ * @brief Published the last KAKU command to the KAKU topic
+ * 
+ * @param sender 
+ * @param groupBit 
+ * @param unit 
+ * @param switchType 
+ */
 void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   DynamicJsonDocument doc(1024);
   doc["sender"] = sender;
@@ -160,6 +198,11 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
   mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
 }
 
+/**
+ * @brief Initializes the MQTT client
+ * 
+ * @param mqttCmdReceived 
+ */
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
   _mqtt_setTopics();
@@ -167,6 +210,11 @@ void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   mqttClient.setCallback(_mqtt_callback);
 }
 
+/**
+ * @brief To be called as often as possible from main loop.
+ * If not connected calls _mqtt_reconnect.
+ * 
+ */
 void mqtt_loop() {
   if (!mqttClient.connected()) {
     _mqtt_reconnect();
