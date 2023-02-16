@@ -274,10 +274,15 @@ void wifi_stop_OTA() {
   ArduinoOTA.end();
   OTArunning = false;
 }
+
+bool wifi_is_ota_on() {
+  return OTArunning;
+}
 #else
 // Dummy stub methods 
 void wifi_start_OTA() {}
 void wifi_stop_OTA() {}
+bool wifi_is_ota_on() {{ return false; }
 #endif
 
 /**

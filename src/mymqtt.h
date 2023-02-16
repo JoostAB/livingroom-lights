@@ -33,6 +33,10 @@ String cmdTopic;
 String statusTopic;
 String willTopic;
 String kakuTopic;
+#ifdef ARDUINO_OTA
+#define TOPIC_OTA "ota"
+String otaTopic;
+#endif
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -56,6 +60,11 @@ void _mqtt_setTopics() {
   PRINTLN("Status topic: ", statusTopic)
   PRINTLN("Will topic: ", willTopic)
   PRINTLN("Kaku topic: ", kakuTopic)
+
+  #ifdef ARDUINO_OTA
+  otaTopic = mainTopic  + "/" + TOPIC_OTA;
+  PRINTLN("OTA topic: ", otaTopic)
+  #endif
 }
 
 /**
@@ -140,7 +149,7 @@ void _mqtt_reconnect() {
       #ifdef HASS_AUTODISCOVERY
       _mqtt_config_hassdiscovery();
       #endif
-      mqttClient.publish((mainTopic + "ip").c_str(), WiFi.localIP().toString().c_str(), true);
+      mqttClient.publish((mainTopic + "/ip").c_str(), WiFi.localIP().toString().c_str(), true);
       mqttClient.publish(willTopic.c_str(), "online", true);
       // ... and resubscribe
       mqttClient.subscribe(cmdTopic.c_str());
@@ -157,6 +166,7 @@ void _mqtt_reconnect() {
   PRINTLNS("Connecting not possible")
   wifi_cleanStart();
 }
+
 
 /**
  * @brief Published the current status (ON or OFF) to the status topic
@@ -176,6 +186,15 @@ void mqtt_setStatus(const char* status) {
     }
   )
 }
+
+#ifdef ARDUINO_OTA
+void mqtt_setOtaStatus(const char* status) {
+  if (!mqttClient.connected()) {
+    _mqtt_reconnect();
+  }
+  mqttClient.publish(otaTopic.c_str(), status, true);
+}
+#endif
 
 /**
  * @brief Published the last KAKU command to the KAKU topic

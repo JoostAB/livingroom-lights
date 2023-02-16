@@ -19,5 +19,6 @@ const char* cmdOtaOn = "OTAON";
 const char* cmdOtaOff = "OTAOFF";
 
 #include <jbdebug.h>
+#include <config.h>
 
 #endif // __GENERAL_H__

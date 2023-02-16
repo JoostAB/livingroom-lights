@@ -16,6 +16,7 @@
 #include <Ticker.h>
 
 Ticker ledflash;
+MyConfig cfg;
 
 void _flashLed_isr();
 void kakuReceived(t_kakuaddress sender, unsigned long groupBit, unsigned long unit, unsigned long switchType);

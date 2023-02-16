@@ -47,12 +47,16 @@ void MQTTCmdReceived(const char* cmd) {
     ledflash.attach(0.3, _flashLed_isr);
     wifi_start_configWeb();
     ledflash.detach();
+  #ifdef ARDUINO_OTA
   } else if (strcmp(cmdOtaOn, cmd) == 0) {
     wifi_start_OTA();
+    mqtt_setOtaStatus(cmdOn);
     ledflash.attach(1.0, _flashLed_isr);
   } else if (strcmp(cmdOtaOff, cmd) == 0) {
     wifi_stop_OTA();
+    mqtt_setOtaStatus(cmdOff);
     ledflash.detach();
+  #endif
   } else {
     PRINTLN("Unknown command received: ", cmd)
   }
@@ -72,6 +76,14 @@ void setup() {
   
   ledflash.detach();
   digitalWrite(LED_BUILTIN, HIGH);
+
+  #ifdef ARDUINO_OTA
+  if (wifi_is_ota_on()) {
+    mqtt_setOtaStatus(cmdOn);
+  } else {
+    mqtt_setOtaStatus(cmdOff);
+  }
+  #endif
 }
 
 void loop() {
