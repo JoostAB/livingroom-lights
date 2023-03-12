@@ -53,5 +53,9 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp"
-  }
+  },
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ],
+  "cmake.configureOnOpen": true
 }

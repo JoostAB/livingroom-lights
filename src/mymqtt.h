@@ -67,8 +67,26 @@ void _mqtt_setTopics() {
   #endif
 }
 
+String _getId() {
+  uint32_t chipId;
+  #ifdef ESP32
+    // see:
+    // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ChipID/GetChipID/GetChipID.ino
+    // https://forum.arduino.cc/t/esp8266-style-chipid-for-esp32/589349/3
+    for(int i=0; i<17; i=i+8) {
+      chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+    }
+    /*
+    Serial.printf("%08X\n", id);
+    */
+    
+  #else
+    chipId = ESP.getChipId();
+  #endif
+  return String(chipId);
+}
 /**
- * @brief Called eacht time an MQTT message comes in through one of
+ * @brief Called each time an MQTT message comes in through one of
  *        the subscribed topics
  * 
  * This will call the MqttCmdReceived callback function registered
@@ -112,7 +130,7 @@ void _mqtt_config_hassdiscovery() {
   doc["stat_t"] = "~/" + String(TOPIC_STATUS);
   doc["cmd_t"] = "~/" + String(TOPIC_CMD);
   doc["ic"] = "mdi:lightbulb";
-  doc["uniq_id"] = String(HASS_ENTITYNAME) + "_" + String(ESP.getChipId());
+  doc["uniq_id"] = String(HASS_ENTITYNAME) + "_" + _getId();
 
   String output;
   serializeJson(doc, output);
@@ -133,7 +151,7 @@ void _mqtt_reconnect() {
   int tryCount = 0;
   while (!mqttClient.connected() && (tryCount < 5)) {
     PRINTLN("Attempting MQTT connection to ", wifi_get_mqttServer())
-    String clientId = "homelight-livingroom-" + String(ESP.getChipId());
+    String clientId = "homelight-livingroom-" + _getId();
     // Attempt to connect
     bool rc = mqttClient.connect(
       clientId.c_str(),
