@@ -13,9 +13,13 @@
 #include <NewRemoteReceiver.h> 
 #include <NewRemoteTransmitter.h>
 
-
-#define TXPIN D2  // Pin for Transmitter
-#define RXPIN D1  // Pin for Receiver
+#ifdef ESP32
+  #define TXPIN 1  // Pin for Transmitter
+  #define RXPIN 2  // Pin for Receiver
+#else
+  #define TXPIN D2  // Pin for Transmitter
+  #define RXPIN D1  // Pin for Receiver
+#endif
 
 #define KAKU_ADDRESS_REMOTE 0x19FBA02 // 27245058
 #define KAKU_REMOTE_UNIT0 0
