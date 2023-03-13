@@ -4,6 +4,8 @@
 
 #include <Arduino.h>
 #include <jbdebug.h>
+#include <LittleFS.h>
+#include <ArduinoJson.h>
 
 class MyConfig {
   public:
@@ -11,60 +13,76 @@ class MyConfig {
     
     void 
       init(),
-      setMqttPort(uint16_t port),
+      setMqttPort(const char* port),
       setMqttServer(const char* server),
       setMqttUser(const char* user),
       setMqttPassword(const char* passw),
-      setMqttTopic(const char* topic);
+      setMqttTopic(const char* topic),
+      setCfgFileName(const char* fname),
+      getMqttCfg(char* port, char* server, char* user, char* password, char* topic);
+    
+    bool
+      saveConfig(),
+      readConfig();
 
 
     /**
      * @brief Returns port of the mqtt server, as registered in config portal
      * 
-     * @return uint16_t 
+     * @return String 
      */
-    uint16_t getMqttPort();
+    String getMqttPort();
 
     /**
      * @brief Returns hostname of the mqtt server, as registered in config portal
      * 
-     * @return char* 
+     * @return String
      */
-    char* getMqttServer();
+    String getMqttServer();
 
     /**
      * @brief Returns user of the mqtt server, as registered in config portal
      * 
-     * @return char* 
+     * @return String
      */
-    char* getMqttUser();
+    String getMqttUser();
 
     /**
      * @brief Returns user password of the mqtt server, as registered in config portal
      * 
-     * @return char* 
+     * @return String 
      */
-    char* getMqttPassword();
+    String getMqttPassword();
 
     /**
      * @brief Returns main mqtt topic, as registered in config portal. If the topic ends with 
      * a forward slash, it is stripped
      * 
-     * @return char* 
+     * @return String 
      */
-    char* getMqttTopic();
+    String getMqttTopic();
+
+    String getCfgFileName();
+    
 
     
 
   private:
-    uint16_t _mqttPort = 1883;
     
-    bool _saveStrCopy(char* tgt, const char* src, size_t maxlen);
+    bool 
+      _saveStrCopy(char* tgt, const char* src, size_t maxlen),
+      _fsBegin();
+
     char 
+      _mqttPort[6] = "1883",
       _mqttServer[40],
       _mqttUser[40],
       _mqttPassword[40],
       _mqttTopic[40] = "homelight/livingroom/main/";
+    
+    String _cfgFilename = "/wificfg.json";
+
+    bool _fsBegun = false;
       
 };
 

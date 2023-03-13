@@ -222,7 +222,7 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
  * 
  * @param mqttCmdReceived 
  */
-void mqtt_start(MqttCmdReceived mqttCmdReceived) {
+void mqtt_start(MqttCmdReceived mqttCmdReceived, MyConfig* _cfg) {
   _mqttCmdReceived = mqttCmdReceived;
   _mqtt_setTopics();
   mqttClient.setServer(wifi_get_mqttServer(), wifi_get_mqttPort());

@@ -70,8 +70,10 @@ void setup() {
   
   ledflash.attach(0.3, _flashLed_isr);
 
-  wifi_start();
-  mqtt_start(MQTTCmdReceived);
+  cfg.readConfig();
+
+  wifi_start(&cfg);
+  mqtt_start(MQTTCmdReceived, &cfg);
   kaku_start(kakuReceived);
   
   ledflash.detach();
