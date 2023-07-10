@@ -33,3 +33,4 @@ Now, I use the [Github repo of 1technophile](https://github.com/1technophile/New
 - [ ] Own web interface for config
 - [ ] Training option for KaKu addresses
 - [ ] Dimming
+- [ ] [MQTT-Now](https://github.com/JoostAB/mqtt-now) integration
