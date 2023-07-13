@@ -57,6 +57,9 @@ void MQTTCmdReceived(const char* cmd) {
     mqtt_setOtaStatus(cmdOff);
     ledflash.detach();
   #endif
+  } else if (strcmp(cmdReboot, cmd) == 0) {
+    PRINTLNS("Reboot requested over MQTT...")
+    ESP.restart();
   } else {
     PRINTLN("Unknown command received: ", cmd)
   }

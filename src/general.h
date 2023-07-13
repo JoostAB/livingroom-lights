@@ -17,6 +17,7 @@ const char* cmdReCfg = "RECFG";
 const char* cmdWebCfg = "WEBCFG";
 const char* cmdOtaOn = "OTAON";
 const char* cmdOtaOff = "OTAOFF";
+const char* cmdReboot = "REBOOT";
 
 #include <jbdebug.h>
 #include <config.h>
