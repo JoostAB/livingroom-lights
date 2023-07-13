@@ -292,7 +292,7 @@ bool wifi_is_ota_on() {{ return false; }
  * @return false if failure
  */
 bool wifi_start() {
-  
+  // wifiManager.resetSettings();
   _wifi_cfg_read();
 
   // File read (or not)
@@ -301,8 +301,7 @@ bool wifi_start() {
   WiFiManagerParameter custom_mqtt_user("mqttuser", "User", _mqtt_user, 40);
   WiFiManagerParameter custom_mqtt_password("mqttpassword", "Passw.", _mqtt_password, 40);
   WiFiManagerParameter custom_mqtt_topic("mqtttopic", "Topic", _mqtt_topic, 40);
-  
-  
+    
   wifiManager.setSaveConfigCallback(_wifi_saveCfgCb);
 
   wifiManager.addParameter(&custom_mqtt_server);
@@ -310,6 +309,9 @@ bool wifi_start() {
   wifiManager.addParameter(&custom_mqtt_user);
   wifiManager.addParameter(&custom_mqtt_password);
   wifiManager.addParameter(&custom_mqtt_topic);
+
+  // Set timeout to 5 minutes (300 secs). Then reboot
+  wifiManager.setConfigPortalTimeout(300);
 
   if (wifiManager.autoConnect(PORTAL_AP_NAME)) {
     if (_saveCfg) {

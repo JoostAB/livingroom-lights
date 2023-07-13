@@ -70,7 +70,12 @@ void setup() {
   
   ledflash.attach(0.3, _flashLed_isr);
 
-  wifi_start();
+  if (!wifi_start()) {
+    // Failed starting wifi. No point in continuing so restart
+    PRINTLNS("Rebooting...");
+    delay(500);
+    ESP.restart();
+  }
   mqtt_start(MQTTCmdReceived);
   kaku_start(kakuReceived);
   
