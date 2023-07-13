@@ -19,11 +19,11 @@ Now, I use the [Github repo of 1technophile](https://github.com/1technophile/New
 
 ## Todo
 
-- [X] Implement a wifi manager
-- [X] MQTT config using WiFiManager
-- [X] ArduinoOTA (startable using MQTT command)
-- [X] Autodiscovery in HomeAssistant
-- [X] Use LED_BUILTIN for status info (connecting etc)
+- [X] Implement a wifi manager (v1.0.0)
+- [X] MQTT config using WiFiManager (v1.0.0)
+- [X] ArduinoOTA (startable using MQTT command) (v1.0.0)
+- [X] Autodiscovery in HomeAssistant (v1.0.0)
+- [X] Use LED_BUILTIN for status info (connecting etc) (v1.0.0)
 - [ ] Cleanup code (ongoing project :wink: )
 - [ ] Add unit tests
 - [ ] ESP32 compatibility
