@@ -9,7 +9,8 @@ and was usually found on his [Bitbucket repo](https://bitbucket.org/fuzzillogic/
 
 Now, I use the [Github repo of 1technophile](https://github.com/1technophile/NewRemoteSwitch). This is also a dependency in platformio_envs.ini.
 
-> **_Warning:_** This version only works with ESP8266 devices. For some reason I can't get the NewRemoteSwitch library to work correctly on ESP32
+~~> **_Warning:_** This version only works with ESP8266 devices. For some reason I can't get the NewRemoteSwitch library to work correctly on ESP32~~
+(Seems fixed now)
 
 ## Enhancements since initial version
 
@@ -24,9 +25,9 @@ Now, I use the [Github repo of 1technophile](https://github.com/1technophile/New
 - [X] ArduinoOTA (startable using MQTT command) (v1.0.0)
 - [X] Autodiscovery in HomeAssistant (v1.0.0)
 - [X] Use LED_BUILTIN for status info (connecting etc) (v1.0.0)
+- [X] ESP32 compatibility (v1.0.1)
 - [ ] Cleanup code (ongoing project :wink: )
 - [ ] Add unit tests
-- [ ] ESP32 compatibility
 
 ## NTH (Nice to haves, so maybe)
 
