@@ -98,7 +98,7 @@ void wifi_start_configPortal() {
  */
 void wifi_cleanStart() {
   PRINTLNS("Clearing settings and restart")
-  wifiManager.resetSettings();
+  //wifiManager.resetSettings();
   delay(2000);
   ESP.restart();
 }
