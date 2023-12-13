@@ -169,6 +169,9 @@ void _mqtt_reconnect() {
       #endif
       mqttClient.publish((mainTopic + "/ip").c_str(), WiFi.localIP().toString().c_str(), true);
       mqttClient.publish(willTopic.c_str(), "online", true);
+      mqttClient.publish((mainTopic + "/fw_name").c_str(), QUOTE(FIRMWARE_NAME), true);
+      mqttClient.publish((mainTopic + "/fw_version").c_str(), QUOTE(FIRMWARE_VERSION), true);
+      
       // ... and resubscribe
       mqttClient.subscribe(cmdTopic.c_str());
       return;
