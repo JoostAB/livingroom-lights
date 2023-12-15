@@ -15,7 +15,9 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 
-#define HASS_ENTITYNAME "Woonkamerlicht"
+#ifndef HASS_ENTITYNAME
+  #define HASS_ENTITYNAME livingroom-lights
+#endif
 
 #ifdef TESTCMD
   #define TOPIC_CMD "cmdtest"
@@ -25,6 +27,8 @@
 #define TOPIC_STATUS "status"
 #define TOPIC_LWT "lwt"
 #define TOPIC_KAKU "kaku"
+#define VAL_ONLINE "online"
+#define VAL_OFFLINE "offline"
 
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
@@ -123,14 +127,22 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
  */
 void _mqtt_config_hassdiscovery() {
   PRINTLNS("Configuring HASS autodiscovery")
-  String hasstopic = "homeassistant/switch/" + String(HASS_ENTITYNAME) + "/config";
+  String hassName = String(QUOTE(HASS_ENTITYNAME));
+  String hasstopic = "homeassistant/switch/" + hassName + "/config";
   DynamicJsonDocument doc(1024);
   doc["~"] = mainTopic;
-  doc["name"] = HASS_ENTITYNAME;
+  doc["avty_t"] = willTopic.c_str();
+  doc["name"] = hassName;
   doc["stat_t"] = "~/" + String(TOPIC_STATUS);
   doc["cmd_t"] = "~/" + String(TOPIC_CMD);
   doc["ic"] = "mdi:lightbulb";
-  doc["uniq_id"] = String(HASS_ENTITYNAME) + "_" + _getId();
+  doc["uniq_id"] = hassName + "_" + _getId();
+  doc["pl_avail"] = VAL_ONLINE;
+  doc["pl_not_avail"] = VAL_OFFLINE;
+  doc["device"]["manufacturer"] = "Joost Bloemsma";
+  doc["device"]["model"] = "1";
+  doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
+  doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
 
   String output;
   serializeJson(doc, output);
@@ -160,7 +172,7 @@ void _mqtt_reconnect() {
       willTopic.c_str(),
       0,
       true,
-      "offline"
+      VAL_OFFLINE
     );
     if (rc) {
       PRINTLNS("connected")
@@ -168,9 +180,7 @@ void _mqtt_reconnect() {
       _mqtt_config_hassdiscovery();
       #endif
       mqttClient.publish((mainTopic + "/ip").c_str(), WiFi.localIP().toString().c_str(), true);
-      mqttClient.publish(willTopic.c_str(), "online", true);
-      mqttClient.publish((mainTopic + "/fw_name").c_str(), QUOTE(FIRMWARE_NAME), true);
-      mqttClient.publish((mainTopic + "/fw_version").c_str(), QUOTE(FIRMWARE_VERSION), true);
+      mqttClient.publish(willTopic.c_str(), VAL_ONLINE, true);
       
       // ... and resubscribe
       mqttClient.subscribe(cmdTopic.c_str());
