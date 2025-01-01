@@ -1,5 +1,9 @@
 {
   "files.associations": {
+    "*.stp": "sql",
+    "*.tbl": "sql",
+    "*.trg": "sql",
+    "*.rul": "sql",
     "array": "cpp",
     "atomic": "cpp",
     "bit": "cpp",

@@ -81,7 +81,8 @@ void setup() {
   }
   mqtt_start(MQTTCmdReceived);
   kaku_start(kakuReceived);
-  
+  webui_start();
+
   ledflash.detach();
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -97,4 +98,5 @@ void setup() {
 void loop() {
   mqtt_loop();
   wifi_loop();
+  webui_loop();
 }

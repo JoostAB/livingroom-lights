@@ -14,6 +14,7 @@
 #include <mykaku.h>
 #include <mymqtt.h>
 #include <Ticker.h>
+#include <webui.h>
 
 Ticker ledflash;
 MyConfig cfg;
