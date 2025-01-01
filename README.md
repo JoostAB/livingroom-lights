@@ -5,7 +5,7 @@
 
 Switches the lights in the livingroom using KlikAanKlikUit switches.
 KaKu switching is done using the NewRemoteSwitch library by [Randy Simons](http://randysimons.nl/)
-and was usually found on his [Bitbucket repo](https://bitbucket.org/fuzzillogic/433mhzforarduino).
+and was originally found on his [Bitbucket repo](https://bitbucket.org/fuzzillogic/433mhzforarduino).
 
 Now, I use the [Github repo of 1technophile](https://github.com/1technophile/NewRemoteSwitch). This is also a dependency in platformio_envs.ini.
 

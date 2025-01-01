@@ -57,5 +57,6 @@
   "githubPullRequests.ignoredPullRequestBranches": [
     "main"
   ],
-  "cmake.configureOnOpen": true
+  "cmake.configureOnOpen": true,
+  "C_Cpp.autocompleteAddParentheses": true
 }
