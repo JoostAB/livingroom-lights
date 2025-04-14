@@ -135,4 +135,8 @@ void kaku_setLights(bool sw) {
   }
 }
 
+bool isAllowedSender(t_kakuaddress sender) {
+  return (sender == KAKU_ADDRESS_REMOTE || sender == KAKU_ADDRESS_WALL);
+}
+
 #endif // __MY_KAKU_H__

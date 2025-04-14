@@ -180,6 +180,8 @@ void _mqtt_reconnect() {
       _mqtt_config_hassdiscovery();
       #endif
       mqttClient.publish((mainTopic + "/ip").c_str(), WiFi.localIP().toString().c_str(), true);
+      mqttClient.publish((mainTopic + "/fw_version").c_str(), QUOTE(FIRMWARE_VERSION));
+      mqttClient.publish((mainTopic + "/fw_name").c_str(), QUOTE(FIRMWARE_NAME));
       mqttClient.publish(willTopic.c_str(), VAL_ONLINE, true);
       
       // ... and resubscribe

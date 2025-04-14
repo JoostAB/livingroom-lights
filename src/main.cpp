@@ -20,6 +20,9 @@ void _flashLed_isr() {
   */
 void kakuReceived(t_kakuaddress sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
   PRINTLN("KAKU command received from ", sender)
+  if (!isAllowedSender(sender)) {
+    PRINTLNS("Not an allowed sender. Deny")
+  }
   mqtt_kakucmd(sender, groupBit, unit, switchType);
   if (switchType == 1) {
     mqtt_setStatus(cmdOn);
