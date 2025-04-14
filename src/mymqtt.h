@@ -27,6 +27,7 @@
 #define TOPIC_STATUS "status"
 #define TOPIC_LWT "lwt"
 #define TOPIC_KAKU "kaku"
+#define TOPIC_KAKU_REJECTED "kakureject"
 #define VAL_ONLINE "online"
 #define VAL_OFFLINE "offline"
 
@@ -37,6 +38,8 @@ String cmdTopic;
 String statusTopic;
 String willTopic;
 String kakuTopic;
+String rejectedTopic;
+
 #ifdef ARDUINO_OTA
 #define TOPIC_OTA "ota"
 String otaTopic;
@@ -58,12 +61,14 @@ void _mqtt_setTopics() {
   statusTopic = mainTopic  + "/" + TOPIC_STATUS;
   willTopic = mainTopic  + "/" + TOPIC_LWT;
   kakuTopic = mainTopic  + "/" + TOPIC_KAKU;
+  rejectedTopic = mainTopic  + "/" + TOPIC_KAKU_REJECTED;
 
   PRINTLN("Main topic: ", mainTopic)
   PRINTLN("Command topic: ", cmdTopic)
   PRINTLN("Status topic: ", statusTopic)
   PRINTLN("Will topic: ", willTopic)
   PRINTLN("Kaku topic: ", kakuTopic)
+  PRINTLN("Rejected topic: ", rejectedTopic)
 
   #ifdef ARDUINO_OTA
   otaTopic = mainTopic  + "/" + TOPIC_OTA;
@@ -248,6 +253,27 @@ void mqtt_kakucmd(unsigned long sender, unsigned long groupBit, unsigned long un
   serializeJson(doc, output);
 
   mqttClient.publish(kakuTopic.c_str(), output.c_str(), true);
+}
+
+/**
+ * @brief Published the last REJECTED KAKU command to the KAKU_REJECTED topic
+ * 
+ * @param sender 
+ * @param groupBit 
+ * @param unit 
+ * @param switchType 
+ */
+void mqtt_kakurejected(unsigned long sender, unsigned long groupBit, unsigned long unit, unsigned long switchType) {
+  DynamicJsonDocument doc(1024);
+  doc["sender"] = sender;
+  doc["groupBit"] = groupBit;
+  doc["unit"] = unit;
+  doc["switchType"] = switchType;
+
+  String output;
+  serializeJson(doc, output);
+
+  mqttClient.publish(rejectedTopic.c_str(), output.c_str(), true);
 }
 
 /**

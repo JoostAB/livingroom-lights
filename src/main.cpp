@@ -22,6 +22,8 @@ void kakuReceived(t_kakuaddress sender, unsigned long groupBit, unsigned long un
   PRINTLN("KAKU command received from ", sender)
   if (!isAllowedSender(sender)) {
     PRINTLNS("Not an allowed sender. Deny")
+    mqtt_kakurejected(sender, groupBit, unit, switchType);
+    return;
   }
   mqtt_kakucmd(sender, groupBit, unit, switchType);
   if (switchType == 1) {
