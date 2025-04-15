@@ -137,7 +137,7 @@ void _mqtt_config_hassdiscovery() {
   DynamicJsonDocument doc(1024);
   doc["~"] = mainTopic;
   doc["avty_t"] = willTopic.c_str();
-  doc["name"] = hassName;
+  doc["name"] = QUOTE(HASS_FRIENDLYNAME);
   doc["stat_t"] = "~/" + String(TOPIC_STATUS);
   doc["cmd_t"] = "~/" + String(TOPIC_CMD);
   doc["ic"] = "mdi:lightbulb";
@@ -146,8 +146,11 @@ void _mqtt_config_hassdiscovery() {
   doc["pl_not_avail"] = VAL_OFFLINE;
   doc["device"]["manufacturer"] = "Joost Bloemsma";
   doc["device"]["model"] = "1";
+  doc["device"]["ids"] = hassName + "_device_" + _getId();
   doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
   doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+
+  doc.shrinkToFit();
 
   String output;
   serializeJson(doc, output);
@@ -284,6 +287,7 @@ void mqtt_kakurejected(unsigned long sender, unsigned long groupBit, unsigned lo
 void mqtt_start(MqttCmdReceived mqttCmdReceived) {
   _mqttCmdReceived = mqttCmdReceived;
   _mqtt_setTopics();
+  mqttClient.setBufferSize(2048,2048);
   mqttClient.setServer(wifi_get_mqttServer(), wifi_get_mqttPort());
   mqttClient.setCallback(_mqtt_callback);
 }
