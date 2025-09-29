@@ -24,12 +24,17 @@
 #else
   #define TOPIC_CMD "cmd"
 #endif
+#define TOPIC_RESULT "result"
 #define TOPIC_STATUS "status"
 #define TOPIC_LWT "lwt"
 #define TOPIC_KAKU "kaku"
 #define TOPIC_KAKU_REJECTED "kakureject"
 #define VAL_ONLINE "online"
 #define VAL_OFFLINE "offline"
+#define VAL_PL_ON "ON"
+#define VAL_PL_OFF "OFF"
+#define VAL_PL_OTAON "OTAON"
+#define VAL_PL_OTAOFF "OTAOFF"
 
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
@@ -39,6 +44,7 @@ String statusTopic;
 String willTopic;
 String kakuTopic;
 String rejectedTopic;
+String resultTopic;
 
 #ifdef ARDUINO_OTA
 #define TOPIC_OTA "ota"
@@ -62,6 +68,7 @@ void _mqtt_setTopics() {
   willTopic = mainTopic  + "/" + TOPIC_LWT;
   kakuTopic = mainTopic  + "/" + TOPIC_KAKU;
   rejectedTopic = mainTopic  + "/" + TOPIC_KAKU_REJECTED;
+  resultTopic = mainTopic + "/" + TOPIC_RESULT;
 
   PRINTLN("Main topic: ", mainTopic)
   PRINTLN("Command topic: ", cmdTopic)
@@ -69,6 +76,7 @@ void _mqtt_setTopics() {
   PRINTLN("Will topic: ", willTopic)
   PRINTLN("Kaku topic: ", kakuTopic)
   PRINTLN("Rejected topic: ", rejectedTopic)
+  PRINTLN("Result topic: ", resultTopic)
 
   #ifdef ARDUINO_OTA
   otaTopic = mainTopic  + "/" + TOPIC_OTA;
@@ -144,10 +152,14 @@ void _mqtt_config_hassdiscovery() {
   doc["uniq_id"] = hassName + "_" + _getId();
   doc["pl_avail"] = VAL_ONLINE;
   doc["pl_not_avail"] = VAL_OFFLINE;
+  doc["pl_on"] = VAL_PL_ON;
+  doc["pl_off"] = VAL_PL_OFF;
+  doc["pl_avail"] = VAL_ONLINE;
   doc["device"]["manufacturer"] = "Joost Bloemsma";
   doc["device"]["model"] = "1";
   doc["device"]["ids"] = hassName + "_device_" + _getId();
   doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
+  doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
   doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
 
   doc.shrinkToFit();
@@ -156,6 +168,38 @@ void _mqtt_config_hassdiscovery() {
   serializeJson(doc, output);
 
   mqttClient.publish(hasstopic.c_str(), output.c_str(), true);
+
+  #ifdef ARDUINO_OTA
+  
+  doc.clear();
+
+  doc["~"] = mainTopic;
+  doc["avty_t"] = willTopic.c_str();
+  doc["name"] = String(QUOTE(HASS_FRIENDLYNAME)) + " (OTA)";
+  doc["stat_t"] = "~/" + String(TOPIC_OTA);
+  doc["cmd_t"] = "~/" + String(TOPIC_CMD);
+  doc["ic"] = "mdi:lightbulb";
+  doc["uniq_id"] = hassName + "_ota_" + _getId();
+  doc["pl_avail"] = VAL_ONLINE;
+  doc["pl_not_avail"] = VAL_OFFLINE;
+  doc["pl_on"] = VAL_PL_OTAON;
+  doc["pl_off"] = VAL_PL_OTAOFF;
+  doc["pl_avail"] = VAL_ONLINE;
+  doc["device"]["manufacturer"] = "Joost Bloemsma";
+  doc["device"]["model"] = "1";
+  doc["device"]["ids"] = hassName + "_device_" + _getId();
+  doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
+  doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+
+  doc.shrinkToFit();
+
+  output = "";
+  serializeJson(doc, output);
+  String hassOtaTopic = "homeassistant/switch/" + hassName + "_ota/config";
+  mqttClient.publish(hassOtaTopic.c_str(), output.c_str(), true);
+
+  #endif
 
   PRINTLNS("Configured HASS Autodiscovery: ")
   PRINTLNSA(output)
@@ -228,6 +272,13 @@ void mqtt_setStatus(const char* status) {
   )
 }
 
+void mqtt_showResult(const char* result) {
+  if (!mqttClient.connected()) {
+    _mqtt_reconnect();
+  }
+  mqttClient.publish(resultTopic.c_str(), result, false);
+  
+}
 #ifdef ARDUINO_OTA
 void mqtt_setOtaStatus(const char* status) {
   if (!mqttClient.connected()) {
