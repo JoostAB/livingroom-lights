@@ -14,7 +14,7 @@
 
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-
+#include <map>
 #ifndef HASS_ENTITYNAME
   #define HASS_ENTITYNAME livingroom-lights
 #endif
@@ -36,6 +36,46 @@
 #define VAL_PL_OTAON "OTAON"
 #define VAL_PL_OTAOFF "OTAOFF"
 
+#ifdef HASS_AUTODISCOVERY
+enum ADCATEGORY {
+  none,
+  diagnostic,
+  config
+};
+
+struct ADInfo {
+  String component;
+  String node;
+  ADCATEGORY category;
+  String stateTopic;
+  String valtemplate;
+  String name;
+  String objectID;
+  String uniqueID;
+  bool availability;
+  String availabilityTopic;
+  String payloadAvailable;
+  String payloadNotAvailable;
+  String payloadOn;
+  String payloadOff;
+  String deviceClass;
+  bool enabledDefault;
+  String icon;
+  String attrTopic;
+  String attrTempl;
+  /*
+    device_class
+    enabled_by_default
+    icon
+    "json_attributes_template": "{{ value_json.data.value | tojson }}",
+    "json_attributes_topic": "zigbee2mqtt/bridge/response/networkmap",
+  */
+  ADInfo() : 
+    category(none), 
+    availability(true), 
+    enabledDefault(false) {};
+};
+#endif // HASS_AUTODISCOVERY
 typedef std::function<void(const char* cmd)> MqttCmdReceived;
 
 String mainTopic;
@@ -50,6 +90,8 @@ String resultTopic;
 #define TOPIC_OTA "ota"
 String otaTopic;
 #endif
+
+
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -138,7 +180,75 @@ void _mqtt_callback(char* topic, byte* payload, unsigned int length) {
  * A unique ID is generated from entity name and esp chip id.
  * 
  */
+
+
+
+std::map<ADCATEGORY, String> adCategory {
+  {none, "none"},
+  {diagnostic, "diagnostic"},
+  {config, "config"}
+};
+
+String strIfNull(String val, String alt) {
+  return val.isEmpty()?alt:val;
+}
+
+int8_t postADinfo(ADInfo* info) {
+  // For available entries see: https://www.home-assistant.io/integrations/mqtt/#discovery-payload
+  assert(!info->component.isEmpty());
+  assert(!info->node.isEmpty());
+  assert(!info->stateTopic.isEmpty());
+  
+  String path = "homeassistant/" + info->component + "/homelight_-" + _getId() + "/" + info->node + "/config";
+  
+  JsonDocument doc;
+  doc["~"] = mainTopic;
+  doc["name"] = strIfNull(info->name, info->node);
+  doc["stat_t"] = info->stateTopic;
+  if (!info->valtemplate.isEmpty()) doc["val_tpl"] = "{{ " + info->valtemplate + " }}";
+  if(!info->payloadOn.isEmpty()) doc["pl_on"] = info->payloadOn;
+  if(!info->payloadOff.isEmpty()) doc["pl_off"] = info->payloadOff;
+  
+  doc["uniq_id"] = strIfNull(info->uniqueID, STRING(HASS_ENTITYNAME) + "_" + _getId());
+  doc["obj_id"] = strIfNull(info->objectID, doc["uniq_id"]);
+
+  // if (!info->attrTempl.isEmpty()) {
+  //   // _rootTopic + PATHSEP
+  //   doc["json_attr_tpl"] = info->attrTempl;
+  //   doc["json_attr_t"] = strIfNull(info->attrTopic, mainTopic + "/" + MQTT_ATTR_TOPIC);
+  // }
+
+  if (info->category>none) doc["ent_cat"] = adCategory[info->category];
+
+  if (info->availability) {
+    doc["avty_t"] = strIfNull(info->availabilityTopic, willTopic.c_str());
+    doc["pl_avail"] = strIfNull(info->payloadAvailable, VAL_ONLINE);
+    doc["pl_not_avail"] = strIfNull(info->payloadNotAvailable, VAL_OFFLINE);
+  }
+
+  JsonObject dev = doc["device"].to<JsonObject>();
+  dev["hw"] = QUOTE(FIRMWARE_NAME PLATFORM);
+  dev["ids"] = STRING(HASS_ENTITYNAME) + "_device_" + _getId();
+  dev["mf"] = "Joost Bloemsma";
+  dev["mdl"] = QUOTE(HASS_FRIENDLYNAME);
+  dev["name"] = QUOTE(HASS_FRIENDLYNAME);
+  dev["sw"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  
+  JsonObject origin = doc["origin"].to<JsonObject>();
+  origin["name"] = QUOTE(HASS_FRIENDLYNAME);
+  origin["sw"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+
+  String json;
+
+  serializeJson(doc, json);
+  //return publish(path, json, true, 1);
+  return mqttClient.publish(path.c_str(), json.c_str(), true);
+}
+
 void _mqtt_config_hassdiscovery() {
+}
+
+void _mqtt_config_hassdiscoverys() {
   PRINTLNS("Configuring HASS autodiscovery")
   String hassName = String(QUOTE(HASS_ENTITYNAME));
   String hasstopic = "homeassistant/switch/" + hassName + "/config";
@@ -208,6 +318,7 @@ void _mqtt_config_hassdiscovery() {
   PRINTLNSA(output)
 
 }
+  
 #endif
 
 /**
