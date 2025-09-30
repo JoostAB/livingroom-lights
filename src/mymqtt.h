@@ -142,7 +142,7 @@ void _mqtt_config_hassdiscovery() {
   PRINTLNS("Configuring HASS autodiscovery")
   String hassName = String(QUOTE(HASS_ENTITYNAME));
   String hasstopic = "homeassistant/switch/" + hassName + "/config";
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(2048);
   doc["~"] = mainTopic;
   doc["avty_t"] = willTopic.c_str();
   doc["name"] = QUOTE(HASS_FRIENDLYNAME);
@@ -159,8 +159,10 @@ void _mqtt_config_hassdiscovery() {
   doc["device"]["model"] = "1";
   doc["device"]["ids"] = hassName + "_device_" + _getId();
   doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
-  doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
-  doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+  //doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  //doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+  doc["device"]["hw"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  doc["device"]["sw"] = QUOTE(FIRMWARE_VERSION);
 
   doc.shrinkToFit();
 
@@ -184,13 +186,14 @@ void _mqtt_config_hassdiscovery() {
   doc["pl_not_avail"] = VAL_OFFLINE;
   doc["pl_on"] = VAL_PL_OTAON;
   doc["pl_off"] = VAL_PL_OTAOFF;
-  doc["pl_avail"] = VAL_ONLINE;
   doc["device"]["manufacturer"] = "Joost Bloemsma";
   doc["device"]["model"] = "1";
   doc["device"]["ids"] = hassName + "_device_" + _getId();
   doc["device"]["name"] = QUOTE(FIRMWARE_NAME);
-  doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
-  doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+  //doc["device"]["fw_version"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  //doc["device"]["sw_version"] = QUOTE(FIRMWARE_VERSION);
+  doc["device"]["hw"] = QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM);
+  doc["device"]["sw"] = QUOTE(FIRMWARE_VERSION);
 
   doc.shrinkToFit();
 
@@ -232,8 +235,9 @@ void _mqtt_reconnect() {
       _mqtt_config_hassdiscovery();
       #endif
       mqttClient.publish((mainTopic + "/ip").c_str(), WiFi.localIP().toString().c_str(), true);
-      mqttClient.publish((mainTopic + "/fw_version").c_str(), QUOTE(FIRMWARE_VERSION));
-      mqttClient.publish((mainTopic + "/fw_name").c_str(), QUOTE(FIRMWARE_NAME));
+      mqttClient.publish((mainTopic + "/fw_version").c_str(), QUOTE(FIRMWARE_VERSION), true);
+      mqttClient.publish((mainTopic + "/fw_name").c_str(), QUOTE(FIRMWARE_NAME FIRMWARE_VERSION PLATFORM),true);
+
       mqttClient.publish(willTopic.c_str(), VAL_ONLINE, true);
       
       // ... and resubscribe

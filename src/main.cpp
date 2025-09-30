@@ -107,9 +107,9 @@ void setup() {
 
   #ifdef ARDUINO_OTA
   if (wifi_is_ota_on()) {
-    mqtt_setOtaStatus(cmdOn);
+    mqtt_setOtaStatus(cmdOtaOn);
   } else {
-    mqtt_setOtaStatus(cmdOff);
+    mqtt_setOtaStatus(cmdOtaOff);
   }
   #endif
 }
